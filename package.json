@@ -1,0 +1,20 @@
+{
+  "name": "GoogleAIAgentHackathon2024",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "biome:format": "npx biome format --write .",
+    "biome:check": "npx biome check --apply .",
+    "api": "pnpm -F \"api\"",
+    "cdktf": "pnpm -F \"cdktf\"",
+    "contract": "pnpm -F \"contract\"",
+    "frontend": "pnpm -F \"frontend\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4"
+  }
+}
