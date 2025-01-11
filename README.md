@@ -81,6 +81,12 @@ GoogleAIAgentHackathon用リポジトリです。
         pnpm run biome:check
         ```
 
+    - スマートコントラクト側にformatter & liter 適用
+
+        ```bash
+        pnpm contract format
+        ```
+
 - ### API
 
     - ローカルでの起動方法
@@ -140,3 +146,39 @@ GoogleAIAgentHackathon用リポジトリです。
         ```bash
         pnpm cdktf run destroy 'hono-vertexai-sample-api'
         ```
+
+- ### スマートコントラクト
+
+    - コンパイル
+
+        ```bash
+        pnpm contract compile
+        ```
+
+    - テスト
+
+        ```bash
+        pnpm contract test
+        ```
+
+    - デプロイ
+
+        ```bash
+        pnpm contract deploy:Lock --network <ネットワーク名>
+        ```
+
+        デプロイできる ネットワーク名は `hardhat.config.ts`を参照してください。
+
+    - verify
+
+        ```bash
+        pnpm contract verify chain-<チェーンID>
+        ```
+
+    - get getChainInfo
+
+        ```bash
+        pnpm contract getChainInfo --network <ネットワーク名>
+        ```
+
+- ### フロントエンド
