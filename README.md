@@ -1,4 +1,5 @@
 # GoogleAIAgentHackathon2024
+
 GoogleAIAgentHackathon用リポジトリです。
 
 ## プロジェクト構成
@@ -9,8 +10,6 @@ GoogleAIAgentHackathon用リポジトリです。
 ├── biome.json
 ├── docs
 │   └── overview.drawio
-├── node_modules
-│   └── @biomejs
 ├── package.json
 ├── pkgs
 │   ├── api              APIサーバー用のディレクトリ
