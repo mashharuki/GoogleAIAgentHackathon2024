@@ -29,19 +29,114 @@ GoogleAIAgentHackathon用リポジトリです。
     - gcloud CLIをインストールすること
     - Terraform CLIをインストールすること
     - CDKTF CLIをインストールすること
+    - docker CLIをインストールすること
 
 - ### **環境変数系**
 
+    動かすためにはそれぞれ以下の通り環境変数をセットアップする必要があります。
+
+    - API
+
+        ```txt
+        GEMINI_API_KEY=""
+        OPENAI_API_KEY=""
+        TAVILY_API_KEY=""
+        PROJECT_ID=""
+        REGION=""
+        ```
+
+    - CDK for Terraform
+
+        ```txt
+        PROJECT_ID=""
+        REGION=""
+        GEMINI_API_KEY=""
+        OPENAI_API_KEY=""
+        TAVILY_API_KEY=""
+        ```
+
+    - スマートコントラクト
+
+        ```txt
+
+        ```
+
+    - フロントエンド
+
+        ```txt
+
 ## 動かし方
 
-- インストール
+- ### 共通
 
-    ```bash
-    pnpm install
-    ```
+    - インストール
 
-- formatter & liter 適用
+        ```bash
+        pnpm install
+        ```
 
-    ```bash
-    pnpm run biome:check
-    ```
+    - formatter & liter 適用
+
+        ```bash
+        pnpm run biome:check
+        ```
+
+- ### API
+
+    - ローカルでの起動方法
+
+        ```bash
+        pnpm api dev
+        ```
+
+    - dockerイメージのビルド
+
+        `api` フォルダ配下で動かしてください。
+
+        ```bash
+        docker build . -t hono-vertexai-image:latest
+        ```
+
+        以下でDocker イメージを確認
+
+        ```bash
+        docker image ls
+        ```
+
+    - dockerイメージを使ってコンテナを起動させる
+
+        ```bash
+        docker run --env-file .env -p 3000:3000 <イメージID>
+        ```
+
+    - docker イメージを格納するためのリポジトリをGoogle Cloud側に作成する。
+
+        ※ あらかじめ gcloudの認証は済ませておくこと！
+
+        ```bash
+        gcloud artifacts repositories create <コンテナリポジトリ名> --repository-format docker --location <リージョン名>
+        ```
+
+    - docker イメージのプッシュ
+
+        ※ あらかじめ gcloudの認証は済ませておくこと！
+
+        ```bash
+        gcloud builds submit --tag <リージョン名>-docker.pkg.dev/<プロジェクトID>/<コンテナリポジトリ名>/<コンテナイメージ名>
+        ```
+
+- ### CDK for Terraform
+
+    ※ あらかじめ gcloudの認証は済ませておくこと！
+
+    - デプロイ
+
+        ```bash
+        pnpm cdktf run deploy 'hono-vertexai-sample-api'
+        ```
+
+    - 削除
+
+        ```bash
+        pnpm cdktf run destroy 'hono-vertexai-sample-api'
+        ```
