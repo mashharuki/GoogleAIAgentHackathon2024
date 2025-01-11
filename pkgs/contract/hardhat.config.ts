@@ -1,9 +1,9 @@
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-verify";
-import * as dotenv from "dotenv";
-import type { HardhatUserConfig } from "hardhat/config";
 import fs from "node:fs";
 import path from "node:path";
+import * as dotenv from "dotenv";
+import type { HardhatUserConfig } from "hardhat/config";
 
 dotenv.config();
 
@@ -45,7 +45,7 @@ const config: HardhatUserConfig = {
     flowTestnet: {
       url: "https://testnet.evm.nodes.onflow.org",
       accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
-    }
+    },
   },
   etherscan: {
     apiKey: {

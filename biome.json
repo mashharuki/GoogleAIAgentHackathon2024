@@ -18,6 +18,7 @@
       "**/target",
       "**/public",
       "**/docs",
+      "**/.next",
       "**/contract/artifacts",
       "**/contract/cache",
       "**/contract/test"
