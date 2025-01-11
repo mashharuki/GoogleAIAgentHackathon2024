@@ -58,12 +58,14 @@ GoogleAIAgentHackathon用リポジトリです。
     - スマートコントラクト
 
         ```txt
-
+        PRIVATE_KEY=""
         ```
 
     - フロントエンド
 
         ```txt
+
+        ```
 
 ## 動かし方
 
@@ -182,3 +184,16 @@ GoogleAIAgentHackathon用リポジトリです。
         ```
 
 - ### フロントエンド
+
+    - ビルド
+
+        ```bash
+        pnpm frontend build
+        ```
+
+
+    - ローカルで起動
+
+        ```bash
+        pnpm frontend dev
+        ```
