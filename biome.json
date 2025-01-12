@@ -21,7 +21,8 @@
       "**/.next",
       "**/contract/artifacts",
       "**/contract/cache",
-      "**/contract/test"
+      "**/contract/test",
+      "**/hardhat.config.ts"
     ]
   },
   "formatter": {
