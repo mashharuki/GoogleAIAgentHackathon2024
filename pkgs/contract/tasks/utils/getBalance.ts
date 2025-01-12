@@ -20,7 +20,7 @@ task("getBalance", "getBalance").setAction(
     });
 
     console.log(
-      `Balance of ${owner.account.address}: ${formatEther(bobBalance)} ETH`,
+      `Balance of ${owner.account.address}: ${formatEther(bobBalance)} ${publicClient.chain.nativeCurrency.symbol}`,
     );
 
     console.log(
