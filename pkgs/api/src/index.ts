@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { HumanMessage } from "@langchain/core/messages";
 import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { Hono } from "hono";
+import { runCdpChatMode } from "./lib/cdpGaiaAgent";
 import { model } from "./lib/langChain";
 import {
   createGeminiAIAgent,
@@ -267,7 +268,7 @@ app.post("/agentVertexAI", async (c) => {
     // Extract the first candidate's content
     const content = response.response.candidates?.[0].content;
     // Create a HumanMessage object
-    const message = new HumanMessage(content.parts[0].text as string);
+    const message = new HumanMessage(content?.parts[0].text as string);
     // console.log("message:", message)
     return { messages: [message] };
   }
@@ -300,6 +301,28 @@ app.post("/agentVertexAI", async (c) => {
 
   return c.json({
     result: nextState.messages[nextState.messages.length - 1].content,
+  });
+});
+
+// CDP AgentKitを使ったAIのメソッドを呼び出す。
+app.post("/runCdpChatMode", async (c) => {
+  // リクエストボディからプロンプトを取得
+  const { prompt } = await c.req.json();
+
+  // プロンプトが存在しない場合にエラーハンドリング
+  if (!prompt) {
+    return c.json(
+      {
+        error: "Prompt is required",
+      },
+      400,
+    );
+  }
+
+  const response = await runCdpChatMode(prompt);
+
+  return c.json({
+    result: response,
   });
 });
 
