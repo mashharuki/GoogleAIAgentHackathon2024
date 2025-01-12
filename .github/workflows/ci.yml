@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-and-build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Node.js のセットアップ
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20  # 必要なNode.jsのバージョンを指定
+          cache: 'pnpm'     # pnpm用のキャッシュを有効化
+
+      # pnpm のインストール
+      - name: Install pnpm
+        run: |
+          npm install -g pnpm
+
+      # 依存関係のインストール
+      - name: Install dependencies
+        run: pnpm install
