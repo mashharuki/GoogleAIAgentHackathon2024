@@ -17,17 +17,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Node.js のセットアップ
+      # Node.js 20 をセットアップ
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20  # 必要なNode.jsのバージョンを指定
-          cache: 'pnpm'     # pnpm用のキャッシュを有効化
+          node-version: 20
+          cache: 'pnpm'
 
-      # pnpm のインストール
+      # pnpm をインストール
       - name: Install pnpm
-        run: |
-          npm install -g pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
 
       # 依存関係のインストール
       - name: Install dependencies
