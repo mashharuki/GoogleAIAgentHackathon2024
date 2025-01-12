@@ -2,6 +2,7 @@
   "name": "GoogleAIAgentHackathon2024",
   "version": "1.0.0",
   "description": "",
+  "packageManager": "pnpm@8.9.1",
   "main": "index.js",
   "scripts": {
     "biome:format": "npx biome format --write .",
