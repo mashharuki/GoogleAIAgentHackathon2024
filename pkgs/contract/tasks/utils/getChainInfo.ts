@@ -12,6 +12,8 @@ task("getChainInfo", "getChainInfo of connected chain").setAction(
     );
 
     const publicClient = await hre.viem.getPublicClient();
+    console.log("network", publicClient.chain);
+
     const chainId = await publicClient.getChainId();
     const blockNumber = await publicClient.getBlockNumber();
     const count = await publicClient.getBlockTransactionCount();

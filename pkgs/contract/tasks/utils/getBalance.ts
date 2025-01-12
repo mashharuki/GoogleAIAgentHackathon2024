@@ -6,13 +6,15 @@ import { formatEther } from "viem";
  * 【Task】get the balance of the account
  */
 task("getBalance", "getBalance").setAction(
-  async (hre: HardhatRuntimeEnvironment) => {
+  async (taskArgs, hre: HardhatRuntimeEnvironment) => {
     console.log(
       "################################### [START] ###################################",
     );
-    const [owner] = await hre.viem.getWalletClients();
 
     const publicClient = await hre.viem.getPublicClient();
+
+    const [owner] = await hre.viem.getWalletClients();
+
     const bobBalance = await publicClient.getBalance({
       address: owner.account.address,
     });

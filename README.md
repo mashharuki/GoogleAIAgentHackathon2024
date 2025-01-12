@@ -182,6 +182,12 @@ GoogleAIAgentHackathon用リポジトリです。
         pnpm contract getChainInfo --network <ネットワーク名>
         ```
 
+    - get Balance
+
+        ```bash
+        pnpm contract getBalance --network <ネットワーク名>
+        ```
+
 - ### フロントエンド
 
     - ビルド
