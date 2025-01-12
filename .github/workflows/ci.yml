@@ -23,7 +23,4 @@ jobs:
         with:
           # 必要に応じて pnpm のバージョンを変更してください
           version: 8.9.1
-
-      # 依存関係のインストール
-      - name: Install dependencies
-        run: pnpm install
+      - run: pnpm install
