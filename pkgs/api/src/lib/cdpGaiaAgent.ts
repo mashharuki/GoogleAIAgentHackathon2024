@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as readline from "node:readline";
 import { CdpAgentkit } from "@coinbase/cdp-agentkit-core";
 import { CdpToolkit } from "@coinbase/cdp-langchain";
 import { HumanMessage } from "@langchain/core/messages";
@@ -5,8 +7,6 @@ import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import * as dotenv from "dotenv";
-import * as fs from "node:fs";
-import * as readline from "node:readline";
 
 dotenv.config();
 
