@@ -27,8 +27,11 @@ const WALLET_DATA_FILE = "wallet_data.txt";
 export const initializeCdpAgent = async () => {
   // Initialize LLM
   const llm = new ChatOpenAI({
-    model: "gpt-4o-mini",
-    apiKey: OPENAI_API_KEY as string,
+    model: "llama",
+    apiKey: "GAIA",
+    configuration: {
+      baseURL: "https://llamatool.us.gaianet.network/v1",
+    },
   });
 
   let walletDataStr: string | null = null;

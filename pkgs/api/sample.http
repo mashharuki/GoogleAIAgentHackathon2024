@@ -98,9 +98,10 @@ POST {{baseUrl}}/runCdpChatMode
 Content-Type: application/json
 
 {
-  "prompt": "What is my balance now?"
+  "prompt": "0.0001 ether を `0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072` に送金してください。"
 }
 
 
-## "prompt": "What is my balance now?"
+## "prompt": "What is my wallet's balance now?"
 ## "prompt": "Cloud you fund faucet to my wallet on base-sepolia?"
+## "prompt": "Cloud you send 0.001ETH from my wallet to 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072?"
