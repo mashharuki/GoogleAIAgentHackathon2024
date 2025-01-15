@@ -58,6 +58,7 @@ GoogleAIAgentHackathon用リポジトリです。
 
         ```txt
         PRIVATE_KEY=""
+        ARBITRUM_ETHERSCAN_KEY=""
         ```
 
     - フロントエンド

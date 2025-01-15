@@ -1,13 +1,13 @@
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-verify";
-import fs from "node:fs";
-import path from "node:path";
 import * as dotenv from "dotenv";
 import type { HardhatUserConfig } from "hardhat/config";
+import fs from "node:fs";
+import path from "node:path";
 
 dotenv.config();
 
-const { PRIVATE_KEY } = process.env;
+const { PRIVATE_KEY,ARBITRUM_ETHERSCAN_KEY } = process.env;
 
 // タスクファイルを読み込むための設定
 const SKIP_LOAD = process.env.SKIP_LOAD === "true";
@@ -46,12 +46,17 @@ const config: HardhatUserConfig = {
       url: "https://testnet.evm.nodes.onflow.org",
       accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
     },
+    arbitrumSepolia: {
+      url: 'https://sepolia-rollup.arbitrum.io/rpc',
+      accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
     apiKey: {
       chiado: "empty",
       minato: "empty",
       flowTestnet: "empty",
+      arbitrumSepolia: ARBITRUM_ETHERSCAN_KEY!,
     },
     customChains: [
       {
@@ -70,10 +75,18 @@ const config: HardhatUserConfig = {
           browserURL: "https://evm-testnet.flowscan.io/",
         },
       },
+      {
+        network: "arbitrumSepolia",
+        chainId: 421614,
+        urls: {
+          apiURL: "https://api-sepolia.arbiscan.io/api",
+          browserURL: "https://sepolia.arbiscan.io/",
+        },
+      },
     ],
   },
   sourcify: {
-    enabled: false,
+    enabled: true,
   },
 };
 
