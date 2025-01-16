@@ -100,6 +100,7 @@ export class MyStack extends TerraformStack {
       },
     });
 
+    // CloudRun リソースに権限を割り当てる。
     new CloudRunServiceIamPolicy(this, "runsvciampolicy", {
       location: config.region,
       project: cloudrunsvcapp.project,

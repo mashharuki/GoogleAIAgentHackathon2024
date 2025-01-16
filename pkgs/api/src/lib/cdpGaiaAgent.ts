@@ -21,19 +21,9 @@ const {
 const WALLET_DATA_FILE = "wallet_data.txt";
 
 /**
- * Initialize the agent with CDP AgentKit method
- * @returns Agent executor and config
+ * get tools for Coinbase Developer Platform AgentKit
  */
-export const initializeCdpAgent = async () => {
-  // Initialize LLM
-  const llm = new ChatOpenAI({
-    model: "llama",
-    apiKey: "GAIA",
-    configuration: {
-      baseURL: "https://llamatool.us.gaianet.network/v1",
-    },
-  });
-
+export const createCdpAgentKitTools = async () => {
   let walletDataStr: string | null = null;
 
   // Read existing wallet data if available
@@ -57,7 +47,24 @@ export const initializeCdpAgent = async () => {
 
   // Initialize CDP AgentKit Toolkit and get tools
   const cdpToolkit = new CdpToolkit(agentkit);
-  const tools = cdpToolkit.getTools();
+  const cdpAgentKitTools = cdpToolkit.getTools();
+
+  return { agentkit, cdpAgentKitTools };
+};
+
+/**
+ * Initialize the agent with CDP AgentKit method
+ * @returns Agent executor and config
+ */
+export const initializeCdpAgent = async () => {
+  // Initialize LLM
+  const llm = new ChatOpenAI({
+    model: "llama",
+    apiKey: "GAIA",
+    configuration: {
+      baseURL: "https://llamatool.us.gaianet.network/v1",
+    },
+  });
 
   // Store buffered conversation history in memory
   const memory = new MemorySaver();
@@ -65,10 +72,13 @@ export const initializeCdpAgent = async () => {
     configurable: { thread_id: "CDP AgentKit Chatbot Example!" },
   };
 
+  // create CDP AgentKit tools
+  const { agentkit, cdpAgentKitTools } = await createCdpAgentKitTools();
+
   // Create React Agent using the LLM and CDP AgentKit tools
   const agent = createReactAgent({
     llm,
-    tools,
+    tools: cdpAgentKitTools,
     checkpointSaver: memory,
     messageModifier:
       "You are a helpful agent that can interact onchain using the Coinbase Developer Platform AgentKit. You are empowered to interact onchain using your tools. If you ever need funds, you can request them from the faucet if you are on network ID `base-sepolia`. If not, you can provide your wallet details and request funds from the user. If someone asks you to do something you can't do with your currently available tools, you must say so, and encourage them to implement it themselves using the CDP SDK + Agentkit, recommend they go to docs.cdp.coinbase.com for more informaton. Be concise and helpful with your responses. Refrain from restating your tools' descriptions unless it is explicitly requested.",
