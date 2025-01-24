@@ -7,7 +7,7 @@ import path from "node:path";
 
 dotenv.config();
 
-const { PRIVATE_KEY,ARBITRUM_ETHERSCAN_KEY } = process.env;
+const { PRIVATE_KEY,ARBITRUM_ETHERSCAN_KEY, BASESCAN_API_KEY } = process.env;
 
 // タスクファイルを読み込むための設定
 const SKIP_LOAD = process.env.SKIP_LOAD === "true";
@@ -50,6 +50,10 @@ const config: HardhatUserConfig = {
       url: 'https://sepolia-rollup.arbitrum.io/rpc',
       accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
     },
+    baseSepolia: {
+      url: 'https://sepolia.base.org',
+      accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
     apiKey: {
@@ -57,6 +61,7 @@ const config: HardhatUserConfig = {
       minato: "empty",
       flowTestnet: "empty",
       arbitrumSepolia: ARBITRUM_ETHERSCAN_KEY!,
+      baseSepolia: BASESCAN_API_KEY!
     },
     customChains: [
       {
@@ -83,6 +88,14 @@ const config: HardhatUserConfig = {
           browserURL: "https://sepolia.arbiscan.io/",
         },
       },
+      {
+        network: "baseSepolia",
+        chainId: 84532,
+        urls: {
+         apiURL: "https://api-sepolia.basescan.org/api",
+         browserURL: "https://sepolia.basescan.org"
+        }
+      }
     ],
   },
   sourcify: {
