@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { HumanMessage } from "@langchain/core/messages";
 import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { runCdpChatMode } from "./lib/cdpGaiaAgent";
 import { model } from "./lib/langChain";
 import {
@@ -24,6 +25,16 @@ import {
 } from "./lib/vertex";
 
 const app = new Hono();
+
+// CORSの設定
+app.use(
+  "*", // 全てのエンドポイントに適用
+  cors({
+    origin: "*",
+    allowMethods: ["GET", "POST", "PUT", "DELETE"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 // デフォルトのメソッド
 app.get("/", (c) => {

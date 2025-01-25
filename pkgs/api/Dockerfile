@@ -10,10 +10,13 @@ RUN npm install -g pnpm
 # フォルダの中身を全てコピーする
 COPY ./ ./
 
+# コピーしたファイルに node ユーザーの権限を付与
+RUN chown -R node:node /usr/src/app
+
 # 依存関係をインストール
 RUN pnpm install --prod
 
-# アプリを実行するユーザーを指定（セキュリティのため root を避ける）
+# アプリを実行するユーザーを指定
 USER node
 EXPOSE 3000/tcp
 

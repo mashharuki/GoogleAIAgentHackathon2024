@@ -9,7 +9,14 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const { GEMINI_API_KEY, OPENAI_API_KEY, TAVILY_API_KEY } = process.env;
+const {
+  GEMINI_API_KEY,
+  OPENAI_API_KEY,
+  TAVILY_API_KEY,
+  CDP_API_KEY_NAME,
+  CDP_API_KEY_PRIVATE_KEY,
+  NETWORK_ID,
+} = process.env;
 
 export interface MyStackConfig {
   projectId: string;
@@ -92,6 +99,18 @@ export class MyStack extends TerraformStack {
                 {
                   name: "TAVILY_API_KEY",
                   value: TAVILY_API_KEY,
+                },
+                {
+                  name: "CDP_API_KEY_NAME",
+                  value: CDP_API_KEY_NAME,
+                },
+                {
+                  name: "CDP_API_KEY_PRIVATE_KEY",
+                  value: CDP_API_KEY_PRIVATE_KEY,
+                },
+                {
+                  name: "NETWORK_ID",
+                  value: NETWORK_ID,
                 },
               ],
             },

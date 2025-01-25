@@ -114,6 +114,8 @@ GoogleAIAgentHackathon用リポジトリです。
 
     - dockerイメージを使ってコンテナを起動させる
 
+        `api` フォルダ配下で動かしてください。
+
         ```bash
         docker run --env-file .env -p 3000:3000 <イメージID>
         ```
@@ -127,6 +129,8 @@ GoogleAIAgentHackathon用リポジトリです。
         ```
 
     - docker イメージのプッシュ
+
+        `api` フォルダ配下で動かしてください。
 
         ※ あらかじめ gcloudの認証は済ませておくこと！
 

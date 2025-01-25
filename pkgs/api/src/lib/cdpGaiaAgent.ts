@@ -40,7 +40,7 @@ export const createCdpAgentKitTools = async () => {
 
   // Configure CDP AgentKit
   const config = {
-    cdpWalletData: walletDataStr || undefined,
+    // cdpWalletData: walletDataStr || undefined,
     networkId: NETWORK_ID || "base-sepolia",
   };
 
@@ -111,17 +111,17 @@ export const initializeCdpAgent = async () => {
 export const runCdpChatMode = async (prompt: string) => {
   console.log("Starting ... ");
 
-  // get agent and config
-  const { agent, config } = await initializeCdpAgent();
+  const response: string[] = [];
 
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
-  const response: string[] = [];
-
   try {
+    // get agent and config
+    const { agent, config } = await initializeCdpAgent();
+
     const stream = await agent.stream(
       { messages: [new HumanMessage(prompt)] },
       config,
@@ -142,15 +142,14 @@ export const runCdpChatMode = async (prompt: string) => {
       console.log("-------------------");
       response.push("-------------------");
     }
-
     rl.close();
 
     return response;
   } catch (error) {
     console.error("Error running chat mode:", error);
     response.push("Error running chat mode:");
-    rl.close();
 
+    rl.close();
     return response;
   }
 };
