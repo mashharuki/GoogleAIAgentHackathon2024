@@ -1,14 +1,13 @@
 import * as fs from "node:fs";
 import * as readline from "node:readline";
 import { CdpAgentkit } from "@coinbase/cdp-agentkit-core";
-import { CdpTool, CdpToolkit } from "@coinbase/cdp-langchain";
-import { type Wallet, hashMessage } from "@coinbase/coinbase-sdk";
+import { CdpToolkit } from "@coinbase/cdp-langchain";
 import { HumanMessage } from "@langchain/core/messages";
 import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import * as dotenv from "dotenv";
-import { z } from "zod";
+import { createSignMessageTool } from "./tools";
 
 dotenv.config();
 
@@ -22,37 +21,6 @@ const {
 
 // Configure a file to persist the agent's CDP MPC Wallet Data
 const WALLET_DATA_FILE = "wallet_data.txt";
-
-// Define the prompt for the sign message action
-const SIGN_MESSAGE_PROMPT = `
-  This tool will sign arbitrary messages using EIP-191 Signed Message Standard hashing.
-`;
-
-// Define the input schema using Zod
-const SignMessageInput = z
-  .object({
-    message: z.string().describe("The message to sign. e.g. `hello world`"),
-  })
-  .strip()
-  .describe("Instructions for signing a blockchain message");
-
-/**
- * Signs a message using EIP-191 message hash from the wallet
- *
- * @param wallet - The wallet to sign the message from
- * @param args - The input arguments for the action
- * @returns The message and corresponding signature
- */
-async function signMessage(
-  wallet: Wallet,
-  args: z.infer<typeof SignMessageInput>,
-): Promise<string> {
-  // Using the correct method from Wallet interface
-  const payloadSignature = await wallet.createPayloadSignature(
-    hashMessage(args.message),
-  );
-  return `The payload signature ${payloadSignature}`;
-}
 
 /**
  * get tools for Coinbase Developer Platform AgentKit
@@ -107,15 +75,7 @@ export const initializeCdpAgent = async () => {
   const { agentkit, cdpAgentKitTools } = await createCdpAgentKitTools();
 
   // Add the sign message tool
-  const signMessageTool = new CdpTool(
-    {
-      name: "sign_message",
-      description: SIGN_MESSAGE_PROMPT,
-      argsSchema: SignMessageInput,
-      func: signMessage,
-    },
-    agentkit,
-  );
+  const signMessageTool = createSignMessageTool(agentkit);
   // ツールを追加
   cdpAgentKitTools.push(signMessageTool);
 
