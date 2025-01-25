@@ -13,6 +13,7 @@ import { z } from "zod";
 dotenv.config();
 
 const {
+  GEMINI_API_KEY,
   CDP_API_KEY_NAME,
   CDP_API_KEY_PRIVATE_KEY,
   OPENAI_API_KEY,
