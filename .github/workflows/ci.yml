@@ -28,6 +28,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # プロジェクト全体のlintチェック
+      - name: Lint project
+        run: pnpm run biome:check
+
       # スマートコントラクトのlintチェック
       - name: Lint contracts
         run: pnpm contract lint
@@ -38,10 +42,6 @@ jobs:
         env:
           # この秘密鍵は hardhatのテスト用に使われる開発用の捨て秘密鍵です。
           PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-
-      # プロジェクト全体のlintチェック
-      - name: Lint project
-        run: pnpm run biome:check
 
       # フロントエンドのビルドチェック
       - name: Build frontend

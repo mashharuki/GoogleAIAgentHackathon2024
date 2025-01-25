@@ -1,12 +1,14 @@
 import * as fs from "node:fs";
 import * as readline from "node:readline";
 import { CdpAgentkit } from "@coinbase/cdp-agentkit-core";
-import { CdpToolkit } from "@coinbase/cdp-langchain";
+import { CdpTool, CdpToolkit } from "@coinbase/cdp-langchain";
+import { type Wallet, hashMessage } from "@coinbase/coinbase-sdk";
 import { HumanMessage } from "@langchain/core/messages";
 import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import * as dotenv from "dotenv";
+import { z } from "zod";
 
 dotenv.config();
 
@@ -19,6 +21,37 @@ const {
 
 // Configure a file to persist the agent's CDP MPC Wallet Data
 const WALLET_DATA_FILE = "wallet_data.txt";
+
+// Define the prompt for the sign message action
+const SIGN_MESSAGE_PROMPT = `
+  This tool will sign arbitrary messages using EIP-191 Signed Message Standard hashing.
+`;
+
+// Define the input schema using Zod
+const SignMessageInput = z
+  .object({
+    message: z.string().describe("The message to sign. e.g. `hello world`"),
+  })
+  .strip()
+  .describe("Instructions for signing a blockchain message");
+
+/**
+ * Signs a message using EIP-191 message hash from the wallet
+ *
+ * @param wallet - The wallet to sign the message from
+ * @param args - The input arguments for the action
+ * @returns The message and corresponding signature
+ */
+async function signMessage(
+  wallet: Wallet,
+  args: z.infer<typeof SignMessageInput>,
+): Promise<string> {
+  // Using the correct method from Wallet interface
+  const payloadSignature = await wallet.createPayloadSignature(
+    hashMessage(args.message),
+  );
+  return `The payload signature ${payloadSignature}`;
+}
 
 /**
  * get tools for Coinbase Developer Platform AgentKit
@@ -59,21 +92,37 @@ export const createCdpAgentKitTools = async () => {
 export const initializeCdpAgent = async () => {
   // Initialize LLM
   const llm = new ChatOpenAI({
-    model: "llama",
-    apiKey: "GAIA",
+    model: "gpt-3.5-turbo-1106",
+    apiKey: OPENAI_API_KEY,
+    // apiKey: "gaia",
+    /*
     configuration: {
       baseURL: "https://llamatool.us.gaianet.network/v1",
     },
+    */
   });
+
+  // create CDP AgentKit tools
+  const { agentkit, cdpAgentKitTools } = await createCdpAgentKitTools();
+
+  // Add the sign message tool
+  const signMessageTool = new CdpTool(
+    {
+      name: "sign_message",
+      description: SIGN_MESSAGE_PROMPT,
+      argsSchema: SignMessageInput,
+      func: signMessage,
+    },
+    agentkit,
+  );
+  // ツールを追加
+  cdpAgentKitTools.push(signMessageTool);
 
   // Store buffered conversation history in memory
   const memory = new MemorySaver();
   const agentConfig = {
     configurable: { thread_id: "CDP AgentKit Chatbot Example!" },
   };
-
-  // create CDP AgentKit tools
-  const { agentkit, cdpAgentKitTools } = await createCdpAgentKitTools();
 
   // Create React Agent using the LLM and CDP AgentKit tools
   const agent = createReactAgent({
