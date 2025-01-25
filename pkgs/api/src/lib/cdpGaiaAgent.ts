@@ -40,7 +40,7 @@ export const createCdpAgentKitTools = async () => {
 
   // Configure CDP AgentKit
   const config = {
-    // cdpWalletData: walletDataStr || undefined,
+    cdpWalletData: walletDataStr || undefined,
     networkId: NETWORK_ID || "base-sepolia",
   };
 
@@ -61,7 +61,7 @@ export const createCdpAgentKitTools = async () => {
 export const initializeCdpAgent = async () => {
   // Initialize LLM
   const llm = new ChatOpenAI({
-    model: "gpt-3.5-turbo-1106",
+    model: "gpt-4.0-mini",
     apiKey: OPENAI_API_KEY,
     // apiKey: "gaia",
     /*
