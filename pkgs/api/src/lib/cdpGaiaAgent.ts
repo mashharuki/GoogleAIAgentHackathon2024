@@ -32,6 +32,7 @@ export const createCdpAgentKitTools = async () => {
   if (fs.existsSync(WALLET_DATA_FILE)) {
     try {
       walletDataStr = fs.readFileSync(WALLET_DATA_FILE, "utf8");
+      console.log("Read wallet data:", walletDataStr);
     } catch (error) {
       console.error("Error reading wallet data:", error);
       // Continue without wallet data
@@ -61,7 +62,7 @@ export const createCdpAgentKitTools = async () => {
 export const initializeCdpAgent = async () => {
   // Initialize LLM
   const llm = new ChatOpenAI({
-    model: "gpt-4.0-mini",
+    model: "gpt-3.5-turbo",
     apiKey: OPENAI_API_KEY,
     // apiKey: "gaia",
     /*

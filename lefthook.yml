@@ -2,10 +2,10 @@ pre-commit:
   commands:
     check:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true . && pnpm contract format && git update-index --again
+      run: npx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true . &&  git update-index --again
 
 pre-push:
   commands:
     check:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npx biome check --no-errors-on-unmatched --files-ignore-unknown=true . && pnpm contract format
+      run: npx biome check --no-errors-on-unmatched --files-ignore-unknown=true .
