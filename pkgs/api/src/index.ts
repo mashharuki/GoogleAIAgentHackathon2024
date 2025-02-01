@@ -4,6 +4,7 @@ import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { runCdpChatMode } from "./lib/cdpGaiaAgent";
+import { createChatGrogAgent, createCryptTools } from "./lib/chatGrog";
 import { model } from "./lib/langChain";
 import {
   createGeminiAIAgent,
@@ -331,6 +332,159 @@ app.post("/runCdpChatMode", async (c) => {
   }
 
   const response = await runCdpChatMode(prompt);
+
+  return c.json({
+    result: response,
+  });
+});
+
+// Chat Groq Agentを使ったAIのメソッドを呼び出す。
+// ツールの設定は、lib/chatGrog.tsに記述されている。
+app.post("/runChatGroqAgent", async (c) => {
+  // リクエストボディからプロンプトを取得
+  const { prompt } = await c.req.json();
+
+  // プロンプトが存在しない場合にエラーハンドリング
+  if (!prompt) {
+    return c.json(
+      {
+        error: "Prompt is required",
+      },
+      400,
+    );
+  }
+
+  // Agentを生成
+  const agent = await createChatGrogAgent();
+
+  const result = await agent.invoke(
+    { messages: [prompt] },
+    { configurable: { thread_id: "43" } },
+  );
+  const response = result.messages[3].content;
+
+  console.log("Result:", response);
+
+  return c.json({
+    result: response,
+  });
+});
+
+// OpenAI のLLMを使ったAIAgentのサンプルメソッドを呼び出す
+app.post("/runCryptOpenAIAgent", async (c) => {
+  // リクエストボディからプロンプトを取得
+  const { prompt } = await c.req.json();
+
+  // プロンプトが存在しない場合にエラーハンドリング
+  if (!prompt) {
+    return c.json(
+      {
+        error: "Prompt is required",
+      },
+      400,
+    );
+  }
+
+  const toolNode = createCryptTools();
+  // AI agent用のインスタンスを作成する。
+  const agent = createOpenAIAIAgent(toolNode);
+
+  // AI の推論を実行してみる。
+  const agentNextState = await agent.invoke(
+    { messages: [new HumanMessage(prompt)] },
+    { configurable: { thread_id: "44" } },
+  );
+
+  console.log(
+    agentNextState.messages[agentNextState.messages.length - 1].content,
+  );
+
+  return c.json({
+    result: agentNextState.messages[agentNextState.messages.length - 1].content,
+  });
+});
+
+// Vertex AI のLLMに暗号資産操作用のツールを割り当てて生成したAIAgentのサンプルメソッドを呼び出す
+app.post("/runCryptoVertexAIAgent", async (c) => {
+  // リクエストボディからプロンプトを取得
+  const { prompt } = await c.req.json();
+
+  // プロンプトが存在しない場合にエラーハンドリング
+  if (!prompt) {
+    return c.json(
+      {
+        error: "Prompt is required",
+      },
+      400,
+    );
+  }
+
+  const toolNode = createCryptTools();
+  // GeminiのAI agent用のインスタンスを作成する。
+  const agent = createVertexAIAIAgent();
+
+  /**
+   * Define the function that determines whether to continue or not
+   * @param param0
+   * @returns
+   */
+  function shouldContinue({ messages }: typeof MessagesAnnotation.State) {
+    const lastMessage = messages[messages.length - 1];
+
+    // If the LLM makes a tool call, then we route to the "tools" node
+    if (lastMessage.additional_kwargs.tool_calls) {
+      return "tools";
+    }
+    // Otherwise, we stop (reply to the user) using the special "__end__" node
+    return "__end__";
+  }
+
+  /**
+   * Define the function that calls the model
+   * @param state
+   * @returns
+   */
+  async function callModel(state: typeof MessagesAnnotation.State) {
+    // AIに推論させる
+    const response = await agent.generateContent({
+      contents: [
+        {
+          role: "model",
+          parts: [
+            {
+              text: `${state.messages[state.messages.length - 1].content.toString()}`,
+            },
+          ],
+        },
+      ],
+    });
+
+    // Extract the first candidate's content
+    const content = response.response.candidates?.[0].content;
+    // Create a HumanMessage object
+    const message = new HumanMessage(content?.parts[0].text as string);
+    // console.log("message:", message)
+    return { messages: [message] };
+  }
+
+  // ワークフローを構築する。
+  const workflow = new StateGraph(MessagesAnnotation)
+    .addNode("agent", callModel)
+    .addEdge("__start__", "agent") // __start__ is a special name for the entrypoint
+    .addNode("tools", toolNode)
+    .addEdge("tools", "agent")
+    .addConditionalEdges("agent", shouldContinue);
+
+  // Finally, we compile it into a LangChain Runnable.
+  const app = workflow.compile();
+
+  // Use the agent
+  const finalState = await app.invoke({
+    messages: [new HumanMessage(prompt)],
+  });
+  // レスポンスを取得する。
+  const response = finalState.messages[finalState.messages.length - 1].content;
+  console.log(response);
 
   return c.json({
     result: response,

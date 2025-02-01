@@ -117,7 +117,7 @@ GoogleAIAgentHackathon用リポジトリです。
         `api` フォルダ配下で動かしてください。
 
         ```bash
-        docker run --env-file .env -p 3000:3000 <イメージID>
+        docker run --env-file .env -p 3000:3000 hono-vertexai-image:latest
         ```
 
     - docker イメージを格納するためのリポジトリをGoogle Cloud側に作成する。

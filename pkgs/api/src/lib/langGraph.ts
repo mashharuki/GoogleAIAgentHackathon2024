@@ -6,6 +6,7 @@ import { MemorySaver } from "@langchain/langgraph";
 import { ToolNode, createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import * as dotenv from "dotenv";
+import { SYSTEM_PROMPT } from "./chatGrog";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ export const createOpenAIAIAgent = (agentTools: ToolNode) => {
     llm: agentModel,
     tools: agentTools,
     checkpointSaver: agentCheckpointer,
+    stateModifier: SYSTEM_PROMPT,
   });
 
   return agent;
@@ -85,6 +87,14 @@ export const createVertexAIAIAgent = () => {
     ],
     generationConfig: {
       maxOutputTokens: 2048,
+    },
+    systemInstruction: {
+      role: "system",
+      parts: [
+        {
+          text: SYSTEM_PROMPT,
+        },
+      ],
     },
   });
 

@@ -7,7 +7,7 @@ import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import * as dotenv from "dotenv";
-import { createSignMessageTool } from "./tools";
+import { createSignMessageTool } from "./tools/cdp/signMessage";
 
 dotenv.config();
 

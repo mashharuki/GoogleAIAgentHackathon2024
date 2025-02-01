@@ -16,6 +16,10 @@ const {
   CDP_API_KEY_NAME,
   CDP_API_KEY_PRIVATE_KEY,
   NETWORK_ID,
+  PRIVATE_KEY,
+  ALCHEMY_API_KEY,
+  Groq_API_Key,
+  COINGECKO_API_KEY,
 } = process.env;
 
 export interface MyStackConfig {
@@ -111,6 +115,22 @@ export class MyStack extends TerraformStack {
                 {
                   name: "NETWORK_ID",
                   value: NETWORK_ID,
+                },
+                {
+                  name: "PRIVATE_KEY",
+                  value: PRIVATE_KEY,
+                },
+                {
+                  name: "ALCHEMY_API_KEY",
+                  value: ALCHEMY_API_KEY,
+                },
+                {
+                  name: "Groq_API_Key",
+                  value: Groq_API_Key,
+                },
+                {
+                  name: "COINGECKO_API_KEY",
+                  value: COINGECKO_API_KEY,
                 },
               ],
             },
