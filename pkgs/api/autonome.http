@@ -1,0 +1,9 @@
+## Autonome 用の APIを叩く http リクエスト
+@baseUrl=https://autonome.alt.technology/web3-dev-eesyph
+
+
+### agents APIを呼び出す
+GET {{baseUrl}}/agents
+Authorization: Basic d2ViMy1kZXY6VHJJa051WEJQSg==
+
+{}
