@@ -4,6 +4,12 @@ import { MemorySaver } from "@langchain/langgraph";
 import { ToolNode, createReactAgent } from "@langchain/langgraph/prebuilt";
 import * as dotenv from "dotenv";
 import {
+  borrowCryptoForArbitrumSepolia,
+  getTokenBalanceForArbitrumSepolia,
+  getUserAccountDataForArbitrumSepolia,
+  lendCryptoForArbitrumSepolia,
+} from "./tools/arbitrumSepolia/aaveTool";
+import {
   getEthAndStEthBalances,
   stakeWithLido,
 } from "./tools/holesky/lidoTool";
@@ -33,6 +39,10 @@ export const createCryptTools = () => {
     swapTokens,
     getEthAndStEthBalances,
     stakeWithLido,
+    getTokenBalanceForArbitrumSepolia,
+    getUserAccountDataForArbitrumSepolia,
+    lendCryptoForArbitrumSepolia,
+    borrowCryptoForArbitrumSepolia,
   ];
 
   const toolNode = new ToolNode(tools);

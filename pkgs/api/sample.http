@@ -41,12 +41,12 @@ POST {{baseUrl}}/runChatGroqAgent
 Content-Type: application/json
 
 {
-  "prompt": "アカウントが 50 USDC以上の USDCを保有している場合、 WETHにSwapしてください。 結果に以下を含めてください: - アカウントの新しい担保状況 - トランザクションハッシュ - トランザクションステータス"
+  "prompt": "アカウントが Arbitrum Sepolia ネットワークで 5 USDC以上保有している場合、 5 USDCを貸し出してください。 結果に以下を含めてください: - アカウントの新しい担保状況 - トランザクションハッシュ - トランザクションステータス"
 }
 
 
 ## "prompt": "アカウントが Holeskyで 10ETH以上保有している場合、 10ETHを使ってステーキングしてください。 結果に以下を含めてください: - アカウントの新しい担保状況 - トランザクションハッシュ - トランザクションステータス"
-##
+## "prompt": "アカウントが Arbitrum Sepolia ネットワークで 5 USDC以上保有している場合、 5 USDCを貸し出してください。 結果に以下を含めてください: - アカウントの新しい担保状況 - トランザクションハッシュ - トランザクションステータス"
 
 
 ### POST /runCryptOpenAIAgent
@@ -54,7 +54,7 @@ POST {{baseUrl}}/runCryptOpenAIAgent
 Content-Type: application/json
 
 {
-  "prompt": "アカウントが 50 USDC以上の USDCを保有している場合、 WETHにSwapしてください。 結果に以下を含めてください: - アカウントの新しい担保状況 - トランザクションハッシュ - トランザクションステータス"
+  "prompt": "アカウントが Arbitrum Sepolia ネットワークで 5 USDC以上保有している場合、 5 USDCを貸し出してください。 結果に以下を含めてください: - アカウントの新しい担保状況 - トランザクションハッシュ - トランザクションステータス"
 }
 
 ### POST /runCryptoVertexAIAgent
