@@ -14,7 +14,7 @@
     "test": "npx hardhat test",
     "verify": "npx hardhat ignition verify",
     "coverage": "SOLIDITY_COVERAGE=true npx hardhat coverage",
-    "deploy:Lock": "npx hardhat ignition deploy ./ignition/modules/Lock.ts",
+    "deploy:Lock": "npx hardhat ignition deploy ./ignition/modules/Lock.ts --strategy create2",
     "local": "npx hardhat node",
     "getBalance": "npx hardhat getBalance",
     "getChainInfo": "npx hardhat getChainInfo",

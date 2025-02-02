@@ -38,10 +38,6 @@ const config: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
-    chiado: {
-      url: "https://rpc.chiadochain.net",
-      accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
-    },
     flowTestnet: {
       url: "https://testnet.evm.nodes.onflow.org",
       accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
@@ -57,21 +53,11 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      chiado: "empty",
-      minato: "empty",
       flowTestnet: "empty",
       arbitrumSepolia: ARBITRUM_ETHERSCAN_KEY!,
       baseSepolia: BASESCAN_API_KEY!
     },
     customChains: [
-      {
-        network: "chiado",
-        chainId: 10200,
-        urls: {
-          apiURL: "https://gnosis-chiado.blockscout.com/api",
-          browserURL: "https://gnosis-chiado.blockscout.com",
-        },
-      },
       {
         network: "flowTestnet",
         chainId: 545,
@@ -100,6 +86,13 @@ const config: HardhatUserConfig = {
   },
   sourcify: {
     enabled: true,
+  },
+  ignition: {
+    strategyConfig: {
+      create2: {
+        salt: "0x0000000000000000000000000000000000000000000000000000000000000001",
+      },
+    },
   },
 };
 
