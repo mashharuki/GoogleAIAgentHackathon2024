@@ -22,7 +22,7 @@ POST {{baseUrl}}/runCdpChatMode
 Content-Type: application/json
 
 {
-  "prompt": "If the Available Borrow Amount of the account is 1 USDC or more, please borrow USDC using it as collateral. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"
+  "prompt": "If the account holds more than 5 USDC, lend it to the AAVE protocol. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"
 }
 
 ## "prompt": "What is my wallet's balance (ETH & USDC) now?"
@@ -34,6 +34,7 @@ Content-Type: application/json
 ## "prompt": "Please sign message to 'Hi, I'm a human.' "
 ## "prompt": "Please sign message to 'Hi, I'm a human.' "
 ## "prompt": "If the account holds more than 5 USDC, lend it to the AAVE protocol. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"
+## "prompt": "If the Available Borrow Amount of the account is 1 USDC or more, please borrow USDC using it as collateral. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"
 
 ### POST /runChatGroqAgent
 POST {{baseUrl}}/runChatGroqAgent

@@ -17,13 +17,7 @@ import { createSignMessageTool } from "./tools/cdp/signMessage";
 
 dotenv.config();
 
-const {
-  GEMINI_API_KEY,
-  CDP_API_KEY_NAME,
-  CDP_API_KEY_PRIVATE_KEY,
-  OPENAI_API_KEY,
-  NETWORK_ID,
-} = process.env;
+const { OPENAI_API_KEY, NETWORK_ID } = process.env;
 
 // Configure a file to persist the agent's CDP MPC Wallet Data
 const WALLET_DATA_FILE = "wallet_data.txt";
