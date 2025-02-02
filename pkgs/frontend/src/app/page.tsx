@@ -1,20 +1,6 @@
-import {
-  Address,
-  Avatar,
-  Badge,
-  EthBalance,
-  Identity,
-  Name,
-} from "@coinbase/onchainkit/identity";
-import {
-  ConnectWallet,
-  Wallet,
-  WalletDefault,
-  WalletDropdown,
-  WalletDropdownBasename,
-  WalletDropdownLink,
-} from "@coinbase/onchainkit/wallet";
+"use client";
+import { WalletComponent } from "../components/Wallet";
 
-export default function Home() {
-  return <WalletDefault />;
+export default function Page() {
+  return <WalletComponent />;
 }
