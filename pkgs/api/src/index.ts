@@ -195,16 +195,35 @@ app.post("/discussion", async (c) => {
     groqResponse.toString(),
   );
 
+  // もう一回プロの投資家AI Agentの機能を呼び出す。
+  // 初心者の質問に対して、プロの投資家が回答する。
+  const groqResponse2 = await runChatGroqAgent(
+    proTools,
+    defiProSystemPrompt,
+    `
+      Below are questions from a DeFi beginner who is eager to understand complex concepts.
+      Please provide clear, simple, and beginner-friendly answers, breaking down technical terms where necessary.
+      Aim to educate and build confidence in their learning journey.
+
+      Here are the questions:
+      ${vertexResponse}
+
+      Please explain your answers in a way that a beginner would understand, using examples when possible.
+      If additional context or resources would be helpful, please mention them as well.
+    `,
+  );
+
   // runOpenAIAIAgent メソッドを呼び出す。
   const openAIresponse = await runOpenAIAIAgent(
     createCryptTools(),
     defiAssistantSystemPrompt,
-    vertexResponse.toString(),
+    groqResponse2.toString(),
   );
 
   return c.json({
     groqResult: groqResponse,
     vertexResult: vertexResponse,
+    groqResponse2: groqResponse2,
     OpenAIResult: openAIresponse,
   });
 });

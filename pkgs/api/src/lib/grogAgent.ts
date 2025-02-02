@@ -79,9 +79,11 @@ export const runChatGroqAgent = async (
     { messages: [new HumanMessage(prompt)] },
     { configurable: { thread_id: "43" } },
   );
-  // 結果を取得する。
-  // console.log("Result:", result.messages[5].content);
-  console.log("Result:", result.messages);
 
-  return result.messages[5].content;
+  const response =
+    result.messages[result.messages.length - 1].content.toString();
+
+  console.log("Result:", response);
+
+  return response;
 };
