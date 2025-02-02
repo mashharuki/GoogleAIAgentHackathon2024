@@ -59,3 +59,12 @@ Content-Type: application/json
 {
   "prompt": "アカウントが 50 USDC以上の USDCを保有している場合、 WETHにSwapしてください。 結果に以下を含めてください: - アカウントの新しい担保状況 - トランザクションハッシュ - トランザクションステータス"
 }
+
+
+### POST /discussion
+POST {{baseUrl}}/discussion
+Content-Type: application/json
+
+{
+  "prompt": "私は、 sepoliaとholeskyでいくらか暗号資産を保有しています。今、自分の資産を一番効率的に増やすためには何をしたら良いでしょうか？"
+}

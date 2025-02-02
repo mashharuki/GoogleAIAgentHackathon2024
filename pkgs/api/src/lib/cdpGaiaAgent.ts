@@ -108,7 +108,7 @@ export const initializeCdpAgent = async (systemPrompt: string) => {
  * @param config - Agent configuration
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const runCdpChatMode = async (prompt: string) => {
+export const runCdpChatMode = async (systemPrompt: string, prompt: string) => {
   console.log("Starting ... ");
 
   const response: string[] = [];
@@ -120,7 +120,7 @@ export const runCdpChatMode = async (prompt: string) => {
 
   try {
     // get agent and config
-    const { agent, config } = await initializeCdpAgent();
+    const { agent, config } = await initializeCdpAgent(systemPrompt);
 
     const stream = await agent.stream(
       { messages: [new HumanMessage(prompt)] },

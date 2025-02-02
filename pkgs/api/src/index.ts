@@ -1,16 +1,18 @@
 import { serve } from "@hono/node-server";
-import { HumanMessage } from "@langchain/core/messages";
+import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { createOpenAIAIAgent } from "./lib/OpenAIAgent";
+import { runOpenAIAIAgent } from "./lib/OpenAIAgent";
 import { runCdpChatMode } from "./lib/cdpGaiaAgent";
-import { defiAssistantSystemPrompt } from "./lib/config";
-import { createChatGrogAgent, createCryptTools } from "./lib/grogAgent";
 import {
-  createAgentTask,
-  createTools,
-  createVertexAIAIAgent,
-} from "./lib/vertexAgent";
+  cdpAssistantSystemPrompt,
+  defiAssistantSystemPrompt,
+  defiBeginnerSystemPrompt,
+  defiProSystemPrompt,
+} from "./lib/config";
+import { createCryptTools, runChatGroqAgent } from "./lib/grogAgent";
+import { getTrendingTokens, search } from "./lib/tools/coinGeckoTool";
+import { createTools, runVertexAIAIAgent } from "./lib/vertexAgent";
 
 const app = new Hono();
 
@@ -58,19 +60,12 @@ app.post("/agentVertexAI", async (c) => {
     );
   }
 
-  const toolNode = createTools();
-  // GeminiのAI agent用のインスタンスを作成する。
-  const agent = createVertexAIAIAgent(defiAssistantSystemPrompt);
-
-  // ワークフローを構築する。
-  const app = await createAgentTask(agent, toolNode);
-
-  // Use the agent
-  const finalState = await app.invoke({
-    messages: [new HumanMessage(prompt)],
-  });
-  const response = finalState.messages[finalState.messages.length - 1].content;
-  console.log(response);
+  // runVertexAIAIAgentメソッドを呼び出す。
+  const response = await runVertexAIAIAgent(
+    createCryptTools(),
+    defiAssistantSystemPrompt,
+    prompt,
+  );
 
   return c.json({
     result: response,
@@ -94,7 +89,7 @@ app.post("/runCdpChatMode", async (c) => {
     );
   }
 
-  const response = await runCdpChatMode(prompt);
+  const response = await runCdpChatMode(cdpAssistantSystemPrompt, prompt);
 
   return c.json({
     result: response,
@@ -119,26 +114,21 @@ app.post("/runChatGroqAgent", async (c) => {
     );
   }
 
-  // Agentを生成
-  const agent = await createChatGrogAgent(
+  // runChatGroqAgentメソッドを呼び出す。
+  const response = await runChatGroqAgent(
     createCryptTools(),
     defiAssistantSystemPrompt,
+    prompt,
   );
-
-  const result = await agent.invoke(
-    { messages: [prompt] },
-    { configurable: { thread_id: "43" } },
-  );
-  const response = result.messages[3].content;
-
-  console.log("Result:", response);
 
   return c.json({
     result: response,
   });
 });
 
-// OpenAI のLLMを使ったAIAgentのサンプルメソッドを呼び出す
+/**
+ * OpenAI のLLMを使ったAIAgentのサンプルメソッドを呼び出す
+ */
 app.post("/runCryptOpenAIAgent", async (c) => {
   // リクエストボディからプロンプトを取得
   const { prompt } = await c.req.json();
@@ -153,24 +143,62 @@ app.post("/runCryptOpenAIAgent", async (c) => {
     );
   }
 
-  // AI agent用のインスタンスを作成する。
-  const agent = createOpenAIAIAgent(
+  // runOpenAIAIAgent メソッドを呼び出す。
+  const response = await runOpenAIAIAgent(
     createCryptTools(),
     defiAssistantSystemPrompt,
-  );
-
-  // AI の推論を実行してみる。
-  const agentNextState = await agent.invoke(
-    { messages: [new HumanMessage(prompt)] },
-    { configurable: { thread_id: "44" } },
-  );
-
-  console.log(
-    agentNextState.messages[agentNextState.messages.length - 1].content,
+    prompt,
   );
 
   return c.json({
-    result: agentNextState.messages[agentNextState.messages.length - 1].content,
+    result: response,
+  });
+});
+
+/**
+ * マルチAI Agentでライブディスカッションさせるメソッド
+ */
+app.post("/discussion", async (c) => {
+  // リクエストボディからプロンプトを取得
+  const { prompt } = await c.req.json();
+
+  // プロンプトが存在しない場合にエラーハンドリング
+  if (!prompt) {
+    return c.json(
+      {
+        error: "Prompt is required",
+      },
+      400,
+    );
+  }
+
+  // groqAgentに渡すツールを設定
+  const proTool = [search, getTrendingTokens];
+  const proTools = new ToolNode(proTool);
+
+  // runChatGroqAgentメソッドを呼び出す。
+  const groqResponse = await runChatGroqAgent(
+    proTools,
+    defiProSystemPrompt,
+    prompt,
+  );
+
+  // runVertexAIAIAgentメソッドを呼び出す。
+  const vertexResponse = await runVertexAIAIAgent(
+    createTools(),
+    defiBeginnerSystemPrompt,
+    groqResponse.toString(),
+  );
+
+  // runOpenAIAIAgent メソッドを呼び出す。
+  const openAIresponse = await runOpenAIAIAgent(
+    createCryptTools(),
+    defiAssistantSystemPrompt,
+    vertexResponse.toString(),
+  );
+
+  return c.json({
+    result: openAIresponse,
   });
 });
 

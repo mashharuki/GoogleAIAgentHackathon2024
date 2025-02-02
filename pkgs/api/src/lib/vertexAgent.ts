@@ -127,3 +127,28 @@ export const createAgentTask = async (
 
   return app;
 };
+
+/**
+ * VertexAIAIAgentに推論処理を実行させるメソッド
+ */
+export const runVertexAIAIAgent = async (
+  tools: ToolNode,
+  systemPrompt: string,
+  prompt: string,
+) => {
+  // GeminiのAI agent用のインスタンスを作成する。
+  const agent = createVertexAIAIAgent(systemPrompt);
+
+  // ワークフローを構築する。
+  const app = await createAgentTask(agent, tools);
+
+  // 推論実行
+  const finalState = await app.invoke({
+    messages: [new HumanMessage(prompt)],
+  });
+
+  const response = finalState.messages[finalState.messages.length - 1].content;
+  console.log(response);
+
+  return response;
+};

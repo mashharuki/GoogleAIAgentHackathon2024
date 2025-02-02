@@ -1,3 +1,4 @@
+import { HumanMessage } from "@langchain/core/messages";
 import { ChatGroq } from "@langchain/groq";
 import { MemorySaver } from "@langchain/langgraph";
 import { ToolNode, createReactAgent } from "@langchain/langgraph/prebuilt";
@@ -61,4 +62,29 @@ export const createChatGrogAgent = async (
   });
 
   return agent;
+};
+
+/**
+ * ChatGroqのAI Agentを実行するメソッド
+ */
+export const runChatGroqAgent = async (
+  tools: ToolNode,
+  systemPrompt: string,
+  prompt: string,
+) => {
+  // Agentを生成
+  const agent = await createChatGrogAgent(tools, systemPrompt);
+
+  const result = await agent.invoke(
+    { messages: [new HumanMessage(prompt)] },
+    { configurable: { thread_id: "43" } },
+  );
+
+  //console.log("Result:", result.messages);
+
+  const response = result.messages;
+
+  console.log("Result:", response);
+
+  return response;
 };
