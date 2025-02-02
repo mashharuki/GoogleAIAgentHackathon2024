@@ -2,15 +2,15 @@ import { serve } from "@hono/node-server";
 import { HumanMessage } from "@langchain/core/messages";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { createOpenAIAIAgent } from "./lib/OpenAIAgent";
 import { runCdpChatMode } from "./lib/cdpGaiaAgent";
-import { createChatGrogAgent, createCryptTools } from "./lib/chatGrog";
+import { defiAssistantSystemPrompt } from "./lib/config";
+import { createChatGrogAgent, createCryptTools } from "./lib/grogAgent";
 import {
   createAgentTask,
-  createGeminiAIAgent,
-  createOpenAIAIAgent,
   createTools,
   createVertexAIAIAgent,
-} from "./lib/langGraph";
+} from "./lib/vertexAgent";
 
 const app = new Hono();
 
@@ -24,12 +24,16 @@ app.use(
   }),
 );
 
-// デフォルトのメソッド
+/**
+ * デフォルトのメソッド
+ */
 app.get("/", (c) => {
   return c.text("Hello, World!");
 });
 
-// ヘルスチェックメソッド
+/**
+ * ヘルスチェックメソッド
+ */
 app.get("/health", (c) => {
   return c.json({
     status: "ok",
@@ -37,68 +41,45 @@ app.get("/health", (c) => {
   });
 });
 
-// Gemini のLLMを使ったAIAgentのサンプルメソッドを呼び出す
-app.post("/agentGemini", async (c) => {
-  const toolNode = createTools();
-  // GeminiのAI agent用のインスタンスを作成する。
-  const agent = createGeminiAIAgent();
-
-  // ワークフローを構築する。
-  const app = await createAgentTask(agent, toolNode);
-
-  // Use the agent
-  const finalState = await app.invoke({
-    messages: [new HumanMessage("what is the weather in sf")],
-  });
-
-  console.log(finalState.messages[finalState.messages.length - 1].content);
-
-  const nextState = await app.invoke({
-    // Including the messages from the previous run gives the LLM context.
-    // This way it knows we're asking about the weather in NY
-    messages: [
-      ...finalState.messages,
-      new HumanMessage("what about Amazon Aurora DSQL?"),
-    ],
-  });
-
-  console.log(nextState.messages[nextState.messages.length - 1].content);
-
-  return c.json({
-    result: nextState.messages[nextState.messages.length - 1].content,
-  });
-});
-
-// Vertex AI のLLMを使ったAIAgentのサンプルメソッドを呼び出す
+/**
+ * Vertex AI のLLMを使ったAIAgentのサンプルメソッドを呼び出す
+ */
 app.post("/agentVertexAI", async (c) => {
+  // リクエストボディからプロンプトを取得
+  const { prompt } = await c.req.json();
+
+  // プロンプトが存在しない場合にエラーハンドリング
+  if (!prompt) {
+    return c.json(
+      {
+        error: "Prompt is required",
+      },
+      400,
+    );
+  }
+
   const toolNode = createTools();
   // GeminiのAI agent用のインスタンスを作成する。
-  const agent = createVertexAIAIAgent();
+  const agent = createVertexAIAIAgent(defiAssistantSystemPrompt);
 
   // ワークフローを構築する。
   const app = await createAgentTask(agent, toolNode);
 
   // Use the agent
   const finalState = await app.invoke({
-    messages: [new HumanMessage("what is AWS?")],
+    messages: [new HumanMessage(prompt)],
   });
-  console.log(finalState.messages[finalState.messages.length - 1].content);
-
-  const nextState = await app.invoke({
-    messages: [
-      ...finalState.messages,
-      new HumanMessage("Please tell me about Amazon Aurora DSQL?"),
-    ],
-  });
-
-  console.log(nextState.messages[nextState.messages.length - 1].content);
+  const response = finalState.messages[finalState.messages.length - 1].content;
+  console.log(response);
 
   return c.json({
-    result: nextState.messages[nextState.messages.length - 1].content,
+    result: response,
   });
 });
 
-// CDP AgentKitを使ったAIのメソッドを呼び出す。
+/**
+ * CDP AgentKitを使ったAIのメソッドを呼び出すメソッド
+ */
 app.post("/runCdpChatMode", async (c) => {
   // リクエストボディからプロンプトを取得
   const { prompt } = await c.req.json();
@@ -120,8 +101,10 @@ app.post("/runCdpChatMode", async (c) => {
   });
 });
 
-// Chat Groq Agentを使ったAIのメソッドを呼び出す。
-// ツールの設定は、lib/chatGrog.tsに記述されている。
+/**
+ * Chat Groq Agentを使ったAIのメソッドを呼び出す。
+ * ツールの設定は、lib/chatGrog.tsに記述されている。
+ */
 app.post("/runChatGroqAgent", async (c) => {
   // リクエストボディからプロンプトを取得
   const { prompt } = await c.req.json();
@@ -137,7 +120,10 @@ app.post("/runChatGroqAgent", async (c) => {
   }
 
   // Agentを生成
-  const agent = await createChatGrogAgent();
+  const agent = await createChatGrogAgent(
+    createCryptTools(),
+    defiAssistantSystemPrompt,
+  );
 
   const result = await agent.invoke(
     { messages: [prompt] },
@@ -167,9 +153,11 @@ app.post("/runCryptOpenAIAgent", async (c) => {
     );
   }
 
-  const toolNode = createCryptTools();
   // AI agent用のインスタンスを作成する。
-  const agent = createOpenAIAIAgent(toolNode);
+  const agent = createOpenAIAIAgent(
+    createCryptTools(),
+    defiAssistantSystemPrompt,
+  );
 
   // AI の推論を実行してみる。
   const agentNextState = await agent.invoke(

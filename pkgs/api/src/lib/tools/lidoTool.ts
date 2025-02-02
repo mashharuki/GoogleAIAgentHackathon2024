@@ -8,14 +8,14 @@ import {
   formatUnits,
   parseUnits,
 } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import { holesky } from "viem/chains";
 import { z } from "zod";
 import { ERC20_ABI } from "./abis/erc20_abi";
+import { account } from "./util";
 
 dotenv.config();
 
-const { ALCHEMY_API_KEY, PRIVATE_KEY } = process.env;
+const { ALCHEMY_API_KEY } = process.env;
 
 // Lido contract information
 const LIDO_ABI = [
@@ -42,7 +42,7 @@ const publicClient = createPublicClient({
 const walletClient = createWalletClient({
   chain: holesky,
   transport: http(`https://eth-holesky.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
-  account: privateKeyToAccount(PRIVATE_KEY as `0x${string}`),
+  account: account,
 });
 
 /**

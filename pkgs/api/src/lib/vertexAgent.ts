@@ -6,21 +6,13 @@ import {
 } from "@google-cloud/vertexai";
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { HumanMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import {
-  MemorySaver,
-  MessagesAnnotation,
-  StateGraph,
-} from "@langchain/langgraph";
-import { ToolNode, createReactAgent } from "@langchain/langgraph/prebuilt";
-import { ChatOpenAI } from "@langchain/openai";
+import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
+import { ToolNode } from "@langchain/langgraph/prebuilt";
 import * as dotenv from "dotenv";
-import { SYSTEM_PROMPT } from "./chatGrog";
 
 dotenv.config();
 
-const { OPENAI_API_KEY, GEMINI_API_KEY, TAVILY_API_KEY, PROJECT_ID, REGION } =
-  process.env;
+const { TAVILY_API_KEY, PROJECT_ID, REGION } = process.env;
 
 /**
  * AI Agentに割り当てるツール群を指定する。
@@ -35,50 +27,9 @@ export const createTools = () => {
 };
 
 /**
- * OpenAIのLLMを使ってAI Agent用のインスタンスを作成するメソッド
- */
-export const createOpenAIAIAgent = (agentTools: ToolNode) => {
-  // Initialize memory to persist state between graph runs
-  const agentCheckpointer = new MemorySaver();
-  const agentModel = new ChatOpenAI({
-    apiKey: OPENAI_API_KEY,
-    temperature: 0,
-  });
-
-  // AI Agent用のインスタンスをs
-  const agent = createReactAgent({
-    llm: agentModel,
-    tools: agentTools,
-    checkpointSaver: agentCheckpointer,
-    stateModifier: SYSTEM_PROMPT,
-  });
-
-  return agent;
-};
-
-/**
- * Google API (Gemini)のLLMを使ってAI Agent用のインスタンスを作成するメソッド
- */
-export const createGeminiAIAgent = () => {
-  const agent = new ChatGoogleGenerativeAI({
-    apiKey: GEMINI_API_KEY,
-    modelName: "gemini-pro",
-    maxOutputTokens: 2048,
-    safetySettings: [
-      {
-        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-      },
-    ],
-  });
-
-  return agent;
-};
-
-/**
  *Vertex AI提供のLLMを使ってAI Agent用のインスタンスを作成するメソッド
  */
-export const createVertexAIAIAgent = () => {
+export const createVertexAIAIAgent = (systemPrompt: string) => {
   // VertexAIインスタンスを作成。
   const vertexAI = new VertexAI({
     project: PROJECT_ID,
@@ -101,7 +52,7 @@ export const createVertexAIAIAgent = () => {
       role: "system",
       parts: [
         {
-          text: SYSTEM_PROMPT,
+          text: systemPrompt,
         },
       ],
     },
@@ -116,7 +67,7 @@ export const createVertexAIAIAgent = () => {
  * @param toolNode 外部ツール
  */
 export const createAgentTask = async (
-  agent: GenerativeModel | ChatGoogleGenerativeAI | VertexAI,
+  agent: GenerativeModel | VertexAI,
   toolNode: ToolNode,
 ) => {
   /**

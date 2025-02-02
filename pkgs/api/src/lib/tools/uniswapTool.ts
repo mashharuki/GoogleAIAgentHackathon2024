@@ -8,17 +8,17 @@ import {
   formatUnits,
   parseUnits,
 } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { z } from "zod";
 import { ERC20_ABI } from "./abis/erc20_abi";
 import { FACTORY_ABI } from "./abis/uniswap/factory";
 import { QUOTER_ABI } from "./abis/uniswap/quoter";
 import { SWAP_ROUTER_ABI } from "./abis/uniswap/swaprouter";
+import { account } from "./util";
 
 dotenv.config();
 
-const { ALCHEMY_API_KEY, PRIVATE_KEY } = process.env;
+const { ALCHEMY_API_KEY } = process.env;
 
 // Deployment Addresses
 const POOL_FACTORY_CONTRACT_ADDRESS =
@@ -36,7 +36,7 @@ const publicClient = createPublicClient({
 const walletClient = createWalletClient({
   chain: sepolia,
   transport: http(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
-  account: privateKeyToAccount(PRIVATE_KEY as `0x${string}`),
+  account: account,
 });
 
 /**

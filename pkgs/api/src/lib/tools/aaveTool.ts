@@ -1,15 +1,15 @@
 import { tool } from "@langchain/core/tools";
 import * as dotenv from "dotenv";
 import { http, createPublicClient, createWalletClient, parseUnits } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { z } from "zod";
 import { AAVE_LENDING_POOL_ABI_TESTNET } from "./abis/aave_lending_pool_abi_testnet";
 import { ERC20_ABI } from "./abis/erc20_abi";
+import { account } from "./util";
 
 dotenv.config();
 
-const { ALCHEMY_API_KEY, PRIVATE_KEY } = process.env;
+const { ALCHEMY_API_KEY } = process.env;
 
 // コントラクトのアドレス(sepolia)
 const AAVE_LENDING_POOL_ADDRESS = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";
@@ -22,7 +22,7 @@ const client = createPublicClient({
 const walletClient = createWalletClient({
   transport: http(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
   chain: sepolia,
-  account: privateKeyToAccount(PRIVATE_KEY as `0x${string}`),
+  account: account,
 });
 
 /**
