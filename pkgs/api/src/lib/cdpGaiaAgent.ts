@@ -7,6 +7,12 @@ import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import * as dotenv from "dotenv";
+import {
+  createBorrowCryptoToolForCdp,
+  createGetTokenBalanceToolForCdp,
+  createGetUserAccountDataToolForCdp,
+  createLendCryptoToolForCdp,
+} from "./tools/cdp/cdpAaveTool";
 import { createSignMessageTool } from "./tools/cdp/signMessage";
 
 dotenv.config();
@@ -75,10 +81,18 @@ export const initializeCdpAgent = async (systemPrompt: string) => {
   // create CDP AgentKit tools
   const { agentkit, cdpAgentKitTools } = await createCdpAgentKitTools();
 
-  // Add the sign message tool
+  // Add tools
   const signMessageTool = createSignMessageTool(agentkit);
+  const borrowCryptoTool = createBorrowCryptoToolForCdp(agentkit);
+  const lendCryptoTool = createLendCryptoToolForCdp(agentkit);
+  const getUserAccountDataTool = createGetUserAccountDataToolForCdp(agentkit);
+  const getTokenBalanceToolForCdp = createGetTokenBalanceToolForCdp(agentkit);
   // ツールを追加
   cdpAgentKitTools.push(signMessageTool);
+  cdpAgentKitTools.push(borrowCryptoTool);
+  cdpAgentKitTools.push(lendCryptoTool);
+  cdpAgentKitTools.push(getUserAccountDataTool);
+  cdpAgentKitTools.push(getTokenBalanceToolForCdp);
 
   // Store buffered conversation history in memory
   const memory = new MemorySaver();
@@ -91,7 +105,7 @@ export const initializeCdpAgent = async (systemPrompt: string) => {
     llm,
     tools: cdpAgentKitTools,
     checkpointSaver: memory,
-    messageModifier: systemPrompt,
+    stateModifier: systemPrompt,
   });
 
   // Save wallet data
