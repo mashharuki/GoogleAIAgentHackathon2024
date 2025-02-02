@@ -66,5 +66,7 @@ POST {{baseUrl}}/discussion
 Content-Type: application/json
 
 {
-  "prompt": "私は、 sepoliaとholeskyでいくらか暗号資産を保有しています。今、自分の資産を一番効率的に増やすためには何をしたら良いでしょうか？"
+  "prompt": "私は、 sepoliaとholeskyでいくらか暗号資産を保有しています。過去24時間の暗号資産のトレンド状況を踏まえたら、自分の資産を一番効率的に増やすためには何をしたら良いでしょうか？"
 }
+
+##  "prompt": "私は、 sepoliaとholeskyでいくらか暗号資産を保有しています。今、自分の資産を一番効率的に増やすためには何をしたら良いでしょうか？"

@@ -3,9 +3,9 @@ import * as dotenv from "dotenv";
 import { http, createPublicClient, createWalletClient, parseUnits } from "viem";
 import { sepolia } from "viem/chains";
 import { z } from "zod";
-import { AAVE_LENDING_POOL_ABI_TESTNET } from "./abis/aave_lending_pool_abi_testnet";
-import { ERC20_ABI } from "./abis/erc20_abi";
-import { account } from "./util";
+import { AAVE_LENDING_POOL_ABI_TESTNET } from "../abis/aave_lending_pool_abi_testnet";
+import { ERC20_ABI } from "../abis/erc20_abi";
+import { account } from "../util";
 
 dotenv.config();
 

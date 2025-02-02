@@ -4,14 +4,16 @@ import { MemorySaver } from "@langchain/langgraph";
 import { ToolNode, createReactAgent } from "@langchain/langgraph/prebuilt";
 import * as dotenv from "dotenv";
 import {
+  getEthAndStEthBalances,
+  stakeWithLido,
+} from "./tools/holesky/lidoTool";
+import {
   borrowCrypto,
   getTokenBalance,
   getUserAccountData,
   lendCrypto,
-} from "./tools/aaveTool";
-import { getTrendingTokens, search } from "./tools/coinGeckoTool";
-import { getEthAndStEthBalances, stakeWithLido } from "./tools/lidoTool";
-import { swapTokens } from "./tools/uniswapTool";
+} from "./tools/sepolia/aaveTool";
+import { swapTokens } from "./tools/sepolia/uniswapTool";
 
 dotenv.config();
 
@@ -28,8 +30,6 @@ export const createCryptTools = () => {
     getUserAccountData,
     lendCrypto,
     borrowCrypto,
-    search,
-    getTrendingTokens,
     swapTokens,
     getEthAndStEthBalances,
     stakeWithLido,
@@ -79,12 +79,9 @@ export const runChatGroqAgent = async (
     { messages: [new HumanMessage(prompt)] },
     { configurable: { thread_id: "43" } },
   );
+  // 結果を取得する。
+  // console.log("Result:", result.messages[5].content);
+  console.log("Result:", result.messages);
 
-  //console.log("Result:", result.messages);
-
-  const response = result.messages;
-
-  console.log("Result:", response);
-
-  return response;
+  return result.messages[5].content;
 };

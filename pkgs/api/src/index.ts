@@ -11,8 +11,9 @@ import {
   defiProSystemPrompt,
 } from "./lib/config";
 import { createCryptTools, runChatGroqAgent } from "./lib/grogAgent";
-import { getTrendingTokens, search } from "./lib/tools/coinGeckoTool";
-import { createTools, runVertexAIAIAgent } from "./lib/vertexAgent";
+import { getTrendingTokens } from "./lib/tools/coinGeckoTool";
+import { search } from "./lib/tools/util";
+import { runVertexAIAIAgent } from "./lib/vertexAgent";
 
 const app = new Hono();
 
@@ -176,16 +177,20 @@ app.post("/discussion", async (c) => {
   const proTool = [search, getTrendingTokens];
   const proTools = new ToolNode(proTool);
 
-  // runChatGroqAgentメソッドを呼び出す。
+  // runChatGroqAgent(ここではDeFiに詳しいプロの投資家)メソッドを呼び出す。
   const groqResponse = await runChatGroqAgent(
     proTools,
     defiProSystemPrompt,
     prompt,
   );
 
-  // runVertexAIAIAgentメソッドを呼び出す。
+  // VertexAIに渡すツールを設定
+  const biggnerTool = [search];
+  const biggnerTools = new ToolNode(biggnerTool);
+
+  // runVertexAIAIAgent(ここではDeFi初心者)メソッドを呼び出す。
   const vertexResponse = await runVertexAIAIAgent(
-    createTools(),
+    biggnerTools,
     defiBeginnerSystemPrompt,
     groqResponse.toString(),
   );
@@ -198,7 +203,9 @@ app.post("/discussion", async (c) => {
   );
 
   return c.json({
-    result: openAIresponse,
+    groqResult: groqResponse,
+    vertexResult: vertexResponse,
+    OpenAIResult: openAIresponse,
   });
 });
 

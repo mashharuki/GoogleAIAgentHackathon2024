@@ -10,11 +10,11 @@ import {
 } from "viem";
 import { sepolia } from "viem/chains";
 import { z } from "zod";
-import { ERC20_ABI } from "./abis/erc20_abi";
-import { FACTORY_ABI } from "./abis/uniswap/factory";
-import { QUOTER_ABI } from "./abis/uniswap/quoter";
-import { SWAP_ROUTER_ABI } from "./abis/uniswap/swaprouter";
-import { account } from "./util";
+import { ERC20_ABI } from "../abis/erc20_abi";
+import { FACTORY_ABI } from "../abis/uniswap/factory";
+import { QUOTER_ABI } from "../abis/uniswap/quoter";
+import { SWAP_ROUTER_ABI } from "../abis/uniswap/swaprouter";
+import { account } from "../util";
 
 dotenv.config();
 

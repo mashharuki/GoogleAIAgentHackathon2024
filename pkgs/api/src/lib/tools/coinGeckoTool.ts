@@ -4,48 +4,10 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const { COINGECKO_API_KEY, TAVILY_API_KEY } = process.env;
+const { COINGECKO_API_KEY } = process.env;
 
 // CoinGecko APIクライアント
 const COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3";
-// Tavily Search クライアントの定義
-const tavilyClientUrl = "https://api.tavily.io/search";
-
-/**
- * Web検索ツール
- * ユーザーのクエリをWeb検索し、結果を辞書形式で返します。
- */
-const search = tool(
-  async (input: { user_query: string }) => {
-    try {
-      const response = await axios.post(
-        tavilyClientUrl,
-        { query: input.user_query },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${TAVILY_API_KEY}`,
-          },
-        },
-      );
-
-      console.log("response.data", response.data);
-
-      return response.data;
-    } catch (error) {
-      console.error("Error in searchTool:", error);
-      return { error: "Failed to fetch search results." };
-    }
-  },
-  {
-    name: "search",
-    description:
-      "Perform a web search based on the user's query and return the search results.",
-    schema: {
-      user_query: "string",
-    },
-  },
-);
 
 /**
  * トレンドトークンを取得するツール
@@ -114,4 +76,4 @@ const getTrendingTokens = tool(
   },
 );
 
-export { getTrendingTokens, search };
+export { getTrendingTokens };

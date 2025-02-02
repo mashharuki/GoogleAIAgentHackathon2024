@@ -10,8 +10,8 @@ import {
 } from "viem";
 import { holesky } from "viem/chains";
 import { z } from "zod";
-import { ERC20_ABI } from "./abis/erc20_abi";
-import { account } from "./util";
+import { ERC20_ABI } from "../abis/erc20_abi";
+import { account } from "../util";
 
 dotenv.config();
 
