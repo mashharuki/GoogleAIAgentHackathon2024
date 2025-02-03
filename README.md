@@ -2,6 +2,12 @@
 
 GoogleAIAgentHackathon用リポジトリです。
 
+## Live Demo
+
+- Vercel
+
+    [https://google-ai-agent-hackathon2024.vercel.app/](https://google-ai-agent-hackathon2024.vercel.app/)
+
 ## プロジェクト構成
 
 ```bash
@@ -37,11 +43,18 @@ GoogleAIAgentHackathon用リポジトリです。
     - API
 
         ```txt
+        PROJECT_ID=""
+        REGION=""
         GEMINI_API_KEY=""
         OPENAI_API_KEY=""
         TAVILY_API_KEY=""
-        PROJECT_ID=""
-        REGION=""
+        CDP_API_KEY_NAME=""
+        CDP_API_KEY_PRIVATE_KEY=""
+        NETWORK_ID="base-sepolia"
+        PRIVATE_KEY=""
+        ALCHEMY_API_KEY=""
+        Groq_API_Key=""
+        COINGECKO_API_KEY=""
         ```
 
     - CDK for Terraform
@@ -52,6 +65,13 @@ GoogleAIAgentHackathon用リポジトリです。
         GEMINI_API_KEY=""
         OPENAI_API_KEY=""
         TAVILY_API_KEY=""
+        CDP_API_KEY_NAME=""
+        CDP_API_KEY_PRIVATE_KEY=""
+        NETWORK_ID="base-sepolia"
+        PRIVATE_KEY=""
+        ALCHEMY_API_KEY=""
+        Groq_API_Key=""
+        COINGECKO_API_KEY=""
         ```
 
     - スマートコントラクト
@@ -65,7 +85,7 @@ GoogleAIAgentHackathon用リポジトリです。
     - フロントエンド
 
         ```txt
-
+        NEXT_PUBLIC_ONCHAINKIT_API_KEY=
         ```
 
 ## 動かし方
