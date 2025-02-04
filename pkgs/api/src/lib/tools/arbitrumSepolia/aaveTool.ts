@@ -3,9 +3,9 @@ import * as dotenv from "dotenv";
 import { http, createPublicClient, createWalletClient, parseUnits } from "viem";
 import { arbitrumSepolia } from "viem/chains";
 import { z } from "zod";
+import { createPrivyViemAccount, createPrivyWallet } from "../../privy";
 import { AAVE_LENDING_POOL_ABI_TESTNET } from "../abis/aave_lending_pool_abi_testnet";
 import { ERC20_ABI } from "../abis/erc20_abi";
-import { account } from "../util";
 
 dotenv.config();
 
@@ -22,7 +22,6 @@ const client = createPublicClient({
 const walletClient = createWalletClient({
   transport: http(`https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
   chain: arbitrumSepolia,
-  account: account,
 });
 
 /**
@@ -53,8 +52,12 @@ const borrowCryptoForArbitrumSepolia = tool(
       // 借入額をトークン単位に変換
       const amountInWei = parseUnits(amount.toString(), decimals);
 
+      // walllet dataを取得
+      const walletData = await createPrivyWallet();
+
       // 借入トランザクションの実行
       const borrowHash = await walletClient.writeContract({
+        account: await createPrivyViemAccount(),
         abi: AAVE_LENDING_POOL_ABI_TESTNET,
         address: AAVE_LENDING_POOL_ADDRESS,
         functionName: "borrow",
@@ -63,7 +66,7 @@ const borrowCryptoForArbitrumSepolia = tool(
           amountInWei,
           interestRateMode,
           0,
-          walletClient.account?.address,
+          walletData.address,
         ],
       });
 
@@ -121,6 +124,7 @@ const lendCryptoForArbitrumSepolia = tool(
 
       // 承認トランザクションを実行
       const approveHash = await walletClient.writeContract({
+        account: await createPrivyViemAccount(),
         abi: ERC20_ABI,
         address: assetAddress,
         functionName: "approve",
@@ -131,12 +135,16 @@ const lendCryptoForArbitrumSepolia = tool(
       // 承認の完了を待つ
       await client.waitForTransactionReceipt({ hash: approveHash });
 
+      // walllet dataを取得
+      const walletData = await createPrivyWallet();
+
       // トークンをAAVE Lending Poolに供給
       const supplyHash = await walletClient.writeContract({
+        account: await createPrivyViemAccount(),
         abi: AAVE_LENDING_POOL_ABI_TESTNET,
         address: AAVE_LENDING_POOL_ADDRESS,
         functionName: "supply",
-        args: [assetAddress, amountInWei, walletClient.account?.address, 0],
+        args: [assetAddress, amountInWei, walletData.address, 0],
       });
       console.log(`Supply transaction hash: ${supplyHash}`);
 
@@ -230,9 +238,12 @@ const getTokenBalanceForArbitrumSepolia = tool(
       const { tokenAddress, userAddress } = input;
       let finalUserAddress = userAddress;
 
+      // walllet dataを取得
+      const walletData = await createPrivyWallet();
+
       // ユーザーアドレスが指定されていない場合、デフォルトで walletClient のアドレスを使用
       if (!finalUserAddress) {
-        finalUserAddress = walletClient.account?.address;
+        finalUserAddress = walletData.address as `0x${string}`;
       }
 
       // トークンの残高を取得
