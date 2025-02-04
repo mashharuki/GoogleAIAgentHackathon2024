@@ -65,6 +65,7 @@ export const defiAssistantSystemPrompt = `
     4. Swap tokens using Uniswap protocol
     5. Search for trending tokens on CoinGecko
     6. Staking ETH using Lido contract (Holesky)
+    7. ReStaking stETH using EigenLayer contract (Holesky)
 `;
 
 // CDP 用のAI Agent System Prompt
