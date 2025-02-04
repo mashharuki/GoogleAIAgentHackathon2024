@@ -1,7 +1,16 @@
 import * as fs from "node:fs";
 import * as readline from "node:readline";
-import { CdpAgentkit } from "@coinbase/cdp-agentkit-core";
-import { CdpToolkit } from "@coinbase/cdp-langchain";
+import {
+  AgentKit,
+  CdpWalletProvider,
+  cdpApiActionProvider,
+  cdpWalletActionProvider,
+  erc20ActionProvider,
+  pythActionProvider,
+  walletActionProvider,
+  wethActionProvider,
+} from "@coinbase/agentkit";
+import { getLangChainTools } from "@coinbase/agentkit-langchain";
 import { HumanMessage } from "@langchain/core/messages";
 import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
@@ -17,7 +26,12 @@ import { createSignMessageTool } from "./tools/cdp/signMessage";
 
 dotenv.config();
 
-const { OPENAI_API_KEY, NETWORK_ID } = process.env;
+const {
+  OPENAI_API_KEY,
+  NETWORK_ID,
+  CDP_API_KEY_NAME,
+  CDP_API_KEY_PRIVATE_KEY,
+} = process.env;
 
 // Configure a file to persist the agent's CDP MPC Wallet Data
 const WALLET_DATA_FILE = "wallet_data.txt";
@@ -41,18 +55,45 @@ export const createCdpAgentKitTools = async () => {
 
   // Configure CDP AgentKit
   const config = {
+    apiKeyName: CDP_API_KEY_NAME,
+    apiKeyPrivateKey: CDP_API_KEY_PRIVATE_KEY?.replace(/\\n/g, "\n"),
     cdpWalletData: walletDataStr || undefined,
     networkId: NETWORK_ID || "base-sepolia",
   };
 
-  // Initialize CDP AgentKit
-  const agentkit = await CdpAgentkit.configureWithWallet(config);
+  // Initialize CDP Wallet Provider
+  const walletProvider = await CdpWalletProvider.configureWithWallet(config);
 
-  // Initialize CDP AgentKit Toolkit and get tools
-  const cdpToolkit = new CdpToolkit(agentkit);
-  const cdpAgentKitTools = cdpToolkit.getTools();
+  console.log("Wallet Provider initialized");
 
-  return { agentkit, cdpAgentKitTools };
+  // Initialize AgentKit
+  const agentkit = await AgentKit.from({
+    walletProvider,
+    actionProviders: [
+      wethActionProvider(),
+      pythActionProvider(),
+      walletActionProvider(),
+      erc20ActionProvider(),
+      cdpApiActionProvider({
+        apiKeyName: CDP_API_KEY_NAME,
+        apiKeyPrivateKey: CDP_API_KEY_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
+      cdpWalletActionProvider({
+        apiKeyName: CDP_API_KEY_NAME,
+        apiKeyPrivateKey: CDP_API_KEY_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
+      createSignMessageTool(),
+      createGetTokenBalanceToolForCdp,
+      createGetUserAccountDataToolForCdp,
+      createBorrowCryptoToolForCdp,
+      createLendCryptoToolForCdp,
+    ],
+  });
+
+  // 外部ツールを取得
+  const cdpAgentKitTools = await getLangChainTools(agentkit);
+
+  return { agentkit, cdpAgentKitTools, walletProvider };
 };
 
 /**
@@ -73,20 +114,8 @@ export const initializeCdpAgent = async (systemPrompt: string) => {
   });
 
   // create CDP AgentKit tools
-  const { agentkit, cdpAgentKitTools } = await createCdpAgentKitTools();
-
-  // Add tools
-  const signMessageTool = createSignMessageTool(agentkit);
-  const borrowCryptoTool = createBorrowCryptoToolForCdp(agentkit);
-  const lendCryptoTool = createLendCryptoToolForCdp(agentkit);
-  const getUserAccountDataTool = createGetUserAccountDataToolForCdp(agentkit);
-  const getTokenBalanceToolForCdp = createGetTokenBalanceToolForCdp(agentkit);
-  // ツールを追加
-  cdpAgentKitTools.push(signMessageTool);
-  cdpAgentKitTools.push(borrowCryptoTool);
-  cdpAgentKitTools.push(lendCryptoTool);
-  cdpAgentKitTools.push(getUserAccountDataTool);
-  cdpAgentKitTools.push(getTokenBalanceToolForCdp);
+  const { agentkit, cdpAgentKitTools, walletProvider } =
+    await createCdpAgentKitTools();
 
   // Store buffered conversation history in memory
   const memory = new MemorySaver();
@@ -103,8 +132,8 @@ export const initializeCdpAgent = async (systemPrompt: string) => {
   });
 
   // Save wallet data
-  const exportedWallet = await agentkit.exportWallet();
-  fs.writeFileSync(WALLET_DATA_FILE, exportedWallet);
+  const exportedWallet = await walletProvider.exportWallet();
+  fs.writeFileSync(WALLET_DATA_FILE, JSON.stringify(exportedWallet));
 
   return { agent, config: agentConfig };
 };

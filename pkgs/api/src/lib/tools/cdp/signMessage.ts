@@ -1,6 +1,7 @@
-import type { CdpAgentkit } from "@coinbase/cdp-agentkit-core";
-import { CdpTool } from "@coinbase/cdp-langchain";
-import { type Wallet, hashMessage } from "@coinbase/coinbase-sdk";
+import {
+  type EvmWalletProvider,
+  customActionProvider,
+} from "@coinbase/agentkit";
 import { z } from "zod";
 
 // Define the prompt for the sign message action
@@ -17,37 +18,20 @@ const SignMessageInput = z
   .describe("Instructions for signing a blockchain message");
 
 /**
- * Signs a message using EIP-191 message hash from the wallet
- *
- * @param wallet - The wallet to sign the message from
- * @param args - The input arguments for the action
- * @returns The message and corresponding signature
- */
-async function signMessage(
-  wallet: Wallet,
-  args: z.infer<typeof SignMessageInput>,
-): Promise<string> {
-  // Using the correct method from Wallet interface
-  const payloadSignature = await wallet.createPayloadSignature(
-    hashMessage(args.message),
-  );
-  return `The payload signature ${payloadSignature}`;
-}
-
-/**
  * SignMessage用のツールを作成するメソッド
  */
-export const createSignMessageTool = (agentkit: CdpAgentkit) => {
+export const createSignMessageTool = () => {
   // Add the sign message tool
-  const signMessageTool = new CdpTool(
-    {
-      name: "sign_message",
-      description: SIGN_MESSAGE_PROMPT,
-      argsSchema: SignMessageInput,
-      func: signMessage,
+  const signMessageTool = customActionProvider<EvmWalletProvider>({
+    name: "sign_message",
+    description: SIGN_MESSAGE_PROMPT,
+    schema: SignMessageInput,
+    invoke: async (walletProvider, args) => {
+      const { message } = args;
+      const signature = await walletProvider.signMessage(message);
+      return `The payload signature ${signature}`;
     },
-    agentkit,
-  );
+  });
 
   return signMessageTool;
 };

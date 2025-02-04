@@ -3,7 +3,7 @@ import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { runOpenAIAIAgent } from "./lib/OpenAIAgent";
-import { runCdpChatMode } from "./lib/cdpGaiaAgent";
+import { runCdpChatMode } from "./lib/cdpAgent";
 import {
   cdpAssistantSystemPrompt,
   defiAssistantSystemPrompt,

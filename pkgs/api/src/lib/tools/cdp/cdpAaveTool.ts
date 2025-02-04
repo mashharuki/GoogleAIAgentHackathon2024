@@ -1,7 +1,8 @@
-import type { CdpAgentkit } from "@coinbase/cdp-agentkit-core";
-import { CdpTool } from "@coinbase/cdp-langchain";
-import type { Wallet } from "@coinbase/coinbase-sdk";
-import { http, createPublicClient, parseUnits } from "viem";
+import {
+  type EvmWalletProvider,
+  customActionProvider,
+} from "@coinbase/agentkit";
+import { http, createPublicClient, encodeFunctionData, parseUnits } from "viem";
 import { baseSepolia } from "viem/chains";
 import { z } from "zod";
 import { AAVE_LENDING_POOL_ABI_TESTNET } from "../abis/aave_lending_pool_abi_testnet";
@@ -15,58 +16,6 @@ const client = createPublicClient({
   chain: baseSepolia,
   transport: http("https://sepolia.base.org"),
 });
-
-/**
- * Borrow crypto tool
- * @param wallet
- * @param args
- * @returns
- */
-async function borrowCrypto(
-  wallet: Wallet,
-  args: z.infer<typeof BorrowCryptoInput>,
-): Promise<string> {
-  const { amount, assetAddress } = args;
-  const interestRateMode = 2;
-
-  try {
-    const decimals = (await client.readContract({
-      abi: ERC20_ABI,
-      address: assetAddress,
-      functionName: "decimals",
-    })) as number;
-
-    const amountInWei = parseUnits(amount.toString(), decimals);
-
-    console.log(`decimals: ${decimals}`);
-    console.log(`Amount in Wei: ${amountInWei.toString()}`);
-
-    // walletAddress
-    const walletData = await wallet.getDefaultAddress();
-    const walletJsonData = JSON.parse(JSON.stringify(walletData));
-    console.log("wallet address:", walletJsonData.id);
-
-    // borrow method call
-    const borrowHash = await wallet.invokeContract({
-      contractAddress: AAVE_LENDING_POOL_ADDRESS,
-      abi: AAVE_LENDING_POOL_ABI_TESTNET,
-      method: "borrow",
-      args: {
-        asset: assetAddress,
-        amount: amountInWei.toString(),
-        interestRateMode: interestRateMode.toString(),
-        referralCode: (0).toString(),
-        onBehalfOf: walletJsonData.id as `0x${string}`,
-      },
-    });
-
-    const result = await borrowHash.wait();
-    return `Borrow transaction : ${result.getTransactionLink()}`;
-  } catch (error) {
-    console.error("Error executing lend_crypto:", error);
-    return "Error executing lend_crypto";
-  }
-}
 
 const BorrowCryptoInput = z
   .object({
@@ -82,74 +31,6 @@ const BorrowCryptoInput = z
   })
   .describe("Borrow crypto from AAVE Lending Pool");
 
-/**
- * Lend crypto tool
- * @param wallet
- * @param args
- * @returns
- */
-async function lendCrypto(
-  wallet: Wallet,
-  args: z.infer<typeof LendCryptoInput>,
-): Promise<string> {
-  const { amount, assetAddress } = args;
-
-  try {
-    const decimals = (await client.readContract({
-      abi: ERC20_ABI,
-      address: assetAddress,
-      functionName: "decimals",
-    })) as number;
-
-    const amountInWei = parseUnits(amount.toString(), decimals).toString();
-
-    console.log(`decimals: ${decimals}`);
-    console.log(`Amount in Wei: ${amountInWei}`);
-
-    // approve method call
-    const approveHash = await wallet.invokeContract({
-      abi: ERC20_ABI,
-      contractAddress: assetAddress,
-      method: "approve",
-      args: {
-        _spender: AAVE_LENDING_POOL_ADDRESS,
-        _value: amountInWei,
-      },
-    });
-
-    const result = await approveHash.wait();
-
-    console.log(`Approve transaction: ${result.getTransactionLink()}`);
-
-    // walletAddress
-    const walletData = await wallet.getDefaultAddress();
-    const walletJsonData = JSON.parse(JSON.stringify(walletData));
-    console.log("wallet address:", walletJsonData.id);
-
-    // supply method call
-    const supplyHash = await wallet.invokeContract({
-      contractAddress: AAVE_LENDING_POOL_ADDRESS,
-      abi: AAVE_LENDING_POOL_ABI_TESTNET,
-      method: "supply",
-      args: {
-        asset: assetAddress,
-        amount: amountInWei,
-        onBehalfOf: walletJsonData.id as `0x${string}`,
-        referralCode: (0).toString(),
-      },
-    });
-
-    const result2 = await supplyHash.wait();
-
-    console.log(`Supply transaction: ${result2.getTransactionLink()}`);
-
-    return `Supply transaction hash: ${result2.getTransactionLink()}`;
-  } catch (error) {
-    console.error("Error executing lend_crypto:", error);
-    return "Error executing lend_crypto";
-  }
-}
-
 const LendCryptoInput = z
   .object({
     amount: z
@@ -164,34 +45,6 @@ const LendCryptoInput = z
   })
   .describe("Lend crypto to AAVE Lending Pool");
 
-/**
- * Get user account data tool
- * @param wallet
- * @param args
- * @returns
- */
-async function getUserAccountData(
-  wallet: Wallet,
-  args: z.infer<typeof GetUserAccountDataInput>,
-): Promise<object> {
-  const { userAddress } = args;
-  const accountData = (await client.readContract({
-    abi: AAVE_LENDING_POOL_ABI_TESTNET,
-    address: AAVE_LENDING_POOL_ADDRESS,
-    functionName: "getUserAccountData",
-    args: [userAddress],
-  })) as [bigint, bigint, bigint, bigint, bigint, bigint];
-
-  return {
-    totalCollateralBase: Number(accountData[0]),
-    totalDebtBase: Number(accountData[1]),
-    availableBorrowsBase: Number(accountData[2]),
-    currentLiquidationThreshold: Number(accountData[3]),
-    ltv: Number(accountData[4]),
-    healthFactor: Number(accountData[5]) / 1e18,
-  };
-}
-
 const GetUserAccountDataInput = z
   .object({
     userAddress: z
@@ -201,35 +54,6 @@ const GetUserAccountDataInput = z
       .describe("The user's wallet address."),
   })
   .describe("Retrieve the user's account data from AAVE");
-
-/**
- *  Get token balance tool
- * @param wallet
- * @param args
- * @returns
- */
-async function getTokenBalance(
-  wallet: Wallet,
-  args: z.infer<typeof GetTokenBalanceInput>,
-): Promise<number> {
-  const { tokenAddress, userAddress } = args;
-  const finalUserAddress = userAddress || (await wallet.getDefaultAddress());
-
-  const balance = await client.readContract({
-    abi: ERC20_ABI,
-    address: tokenAddress,
-    functionName: "balanceOf",
-    args: [finalUserAddress],
-  });
-
-  const decimals = await client.readContract({
-    abi: ERC20_ABI,
-    address: tokenAddress,
-    functionName: "decimals",
-  });
-
-  return Number(balance) / 10 ** (decimals as number);
-}
 
 const GetTokenBalanceInput = z
   .object({
@@ -251,50 +75,203 @@ const GetTokenBalanceInput = z
 // 各種ツールの作成
 //　==========================================================================================
 
-export const createBorrowCryptoToolForCdp = (agentkit: CdpAgentkit) => {
-  return new CdpTool(
-    {
-      name: "borrow_crypto",
-      description: "Borrow cryptocurrency from AAVE.",
-      argsSchema: BorrowCryptoInput,
-      func: borrowCrypto,
-    },
-    agentkit,
-  );
-};
+/**
+ * Borrow crypto tool
+ * @param wallet
+ * @param args
+ * @returns
+ */
+export const createBorrowCryptoToolForCdp =
+  customActionProvider<EvmWalletProvider>({
+    name: "borrow_crypto",
+    description: "Borrow cryptocurrency from AAVE.",
+    schema: BorrowCryptoInput,
+    invoke: async (walletProvider, args) => {
+      const { amount, assetAddress } = args;
+      const interestRateMode = 2;
 
-export const createLendCryptoToolForCdp = (agentkit: CdpAgentkit) => {
-  return new CdpTool(
-    {
-      name: "lend_crypto",
-      description: "Lend cryptocurrency to AAVE.",
-      argsSchema: LendCryptoInput,
-      func: lendCrypto,
-    },
-    agentkit,
-  );
-};
+      console.log(`assetAddress: ${assetAddress}`);
 
-export const createGetUserAccountDataToolForCdp = (agentkit: CdpAgentkit) => {
-  return new CdpTool(
-    {
-      name: "get_user_account_data",
-      description: "Retrieve user account data from AAVE.",
-      argsSchema: GetUserAccountDataInput,
-      func: getUserAccountData,
-    },
-    agentkit,
-  );
-};
+      try {
+        const decimals = (await client.readContract({
+          abi: ERC20_ABI,
+          address: assetAddress,
+          functionName: "decimals",
+        })) as number;
 
-export const createGetTokenBalanceToolForCdp = (agentkit: CdpAgentkit) => {
-  return new CdpTool(
-    {
-      name: "get_token_balance",
-      description: "Get token balance for a given user.",
-      argsSchema: GetTokenBalanceInput,
-      func: getTokenBalance,
+        const amountInWei = parseUnits(amount.toString(), decimals);
+
+        console.log(`decimals: ${decimals}`);
+        console.log(`Amount in Wei: ${amountInWei.toString()}`);
+
+        // walletAddress
+        const walletAddress = await walletProvider.getAddress();
+        console.log("wallet address:", walletAddress);
+
+        // borrow method call
+        const borrowHash = await walletProvider.sendTransaction({
+          to: AAVE_LENDING_POOL_ADDRESS,
+          data: encodeFunctionData({
+            abi: AAVE_LENDING_POOL_ABI_TESTNET,
+            functionName: "borrow",
+            args: [
+              assetAddress,
+              amountInWei.toString(),
+              interestRateMode,
+              0,
+              walletAddress,
+            ],
+          }),
+        });
+
+        const result =
+          await walletProvider.waitForTransactionReceipt(borrowHash);
+
+        return `Borrow transaction : ${result.getTransactionLink()}`;
+      } catch (error) {
+        console.error("Error executing lend_crypto:", error);
+        return "Error executing lend_crypto";
+      }
     },
-    agentkit,
-  );
-};
+  });
+
+/**
+ * Lend crypto tool
+ * @param wallet
+ * @param args
+ * @returns
+ */
+export const createLendCryptoToolForCdp =
+  customActionProvider<EvmWalletProvider>({
+    name: "lend_crypto",
+    description: "Lend cryptocurrency to AAVE.",
+    schema: LendCryptoInput,
+    invoke: async (walletProvider, args) => {
+      const { amount, assetAddress } = args;
+
+      try {
+        console.log("assetAddress:", assetAddress);
+
+        const decimals = (await client.readContract({
+          abi: ERC20_ABI,
+          address: assetAddress as `0x${string}`,
+          functionName: "decimals",
+        })) as number;
+
+        const amountInWei = parseUnits(amount.toString(), decimals).toString();
+
+        console.log(`decimals: ${decimals}`);
+        console.log(`Amount in Wei: ${amountInWei}`);
+
+        // walletAddress
+        const walletAddress = await walletProvider.getAddress();
+        console.log("wallet address:", walletAddress);
+
+        // トランザクションデータ
+        const tx = {
+          from: walletAddress as `0x${string}`,
+          to: assetAddress as `0x${string}`,
+          data: encodeFunctionData({
+            abi: ERC20_ABI,
+            functionName: "approve",
+            args: [AAVE_LENDING_POOL_ADDRESS, amountInWei],
+          }),
+        };
+
+        // approve method call
+        const approveHash = await walletProvider.sendTransaction(tx);
+
+        const result =
+          await walletProvider.waitForTransactionReceipt(approveHash);
+
+        console.log(`Approve transaction: ${result.getTransactionLink()}`);
+
+        // supply method call
+        const supplyHash = await await walletProvider.sendTransaction({
+          from: walletAddress as `0x${string}`,
+          to: AAVE_LENDING_POOL_ADDRESS,
+          data: encodeFunctionData({
+            abi: AAVE_LENDING_POOL_ABI_TESTNET,
+            functionName: "supply",
+            args: [assetAddress, amountInWei, walletAddress, 0],
+          }),
+        });
+
+        const result2 =
+          await walletProvider.waitForTransactionReceipt(supplyHash);
+
+        console.log(`Supply transaction: ${result2.getTransactionLink()}`);
+
+        return `Supply transaction hash: ${result2.getTransactionLink()}`;
+      } catch (error) {
+        console.error("Error executing lend_crypto:", error);
+        return "Error executing lend_crypto";
+      }
+    },
+  });
+
+/**
+ * Get user account data tool
+ * @param wallet
+ * @param args
+ * @returns
+ */
+export const createGetUserAccountDataToolForCdp =
+  customActionProvider<EvmWalletProvider>({
+    name: "get_user_account_data",
+    description: "Retrieve user account data from AAVE.",
+    schema: GetUserAccountDataInput,
+    invoke: async (walletProvider, args) => {
+      const { userAddress } = args;
+      // call getUserAccountData method
+      const accountData = (await client.readContract({
+        abi: AAVE_LENDING_POOL_ABI_TESTNET,
+        address: AAVE_LENDING_POOL_ADDRESS,
+        functionName: "getUserAccountData",
+        args: [userAddress],
+      })) as [bigint, bigint, bigint, bigint, bigint, bigint];
+
+      return {
+        totalCollateralBase: Number(accountData[0]),
+        totalDebtBase: Number(accountData[1]),
+        availableBorrowsBase: Number(accountData[2]),
+        currentLiquidationThreshold: Number(accountData[3]),
+        ltv: Number(accountData[4]),
+        healthFactor: Number(accountData[5]) / 1e18,
+      };
+    },
+  });
+
+/**
+ * Get token balance tool
+ * @param wallet
+ * @param args
+ * @returns
+ */
+export const createGetTokenBalanceToolForCdp =
+  customActionProvider<EvmWalletProvider>({
+    name: "get_token_balance",
+    description: "Get token balance for a given user.",
+    schema: GetTokenBalanceInput,
+    invoke: async (walletProvider, args) => {
+      const { tokenAddress, userAddress } = args;
+      // get user address
+      const finalUserAddress =
+        userAddress || (await walletProvider.getAddress());
+
+      const balance = await client.readContract({
+        abi: ERC20_ABI,
+        address: tokenAddress,
+        functionName: "balanceOf",
+        args: [finalUserAddress],
+      });
+
+      const decimals = await client.readContract({
+        abi: ERC20_ABI,
+        address: tokenAddress,
+        functionName: "decimals",
+      });
+
+      return Number(balance) / 10 ** (decimals as number);
+    },
+  });

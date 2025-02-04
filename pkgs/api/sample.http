@@ -1,7 +1,7 @@
 # API Endpoint
 @baseUrl = http://localhost:3000
 # ここは各自デプロイした結果によって異なります。
-# @baseUrl = https://hono-vertexai-image-tbj5qgjmvq-uc.a.run.app
+#@baseUrl = https://hono-vertexai-image-tbj5qgjmvq-uc.a.run.app
 
 ### GET /
 GET {{baseUrl}}/
@@ -22,7 +22,7 @@ POST {{baseUrl}}/runCdpChatMode
 Content-Type: application/json
 
 {
-  "prompt": "If the account holds more than 5 USDC, lend it to the AAVE protocol. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"
+  "prompt": "Please tell me abount my account data on AAVE protocol."
 }
 
 ## "prompt": "What is my wallet's balance (ETH & USDC) now?"
@@ -31,7 +31,6 @@ Content-Type: application/json
 ## "prompt": "Please register myTestDomain to basename"
 ## "prompt": "Cloud you fund ETH (faucet) to my wallet on base-sepolia?"
 ## "prompt": "Cloud you send 0.001ETH from my wallet to 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072?"
-## "prompt": "Please sign message to 'Hi, I'm a human.' "
 ## "prompt": "Please sign message to 'Hi, I'm a human.' "
 ## "prompt": "If the account holds more than 5 USDC, lend it to the AAVE protocol. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"
 ## "prompt": "If the Available Borrow Amount of the account is 1 USDC or more, please borrow USDC using it as collateral. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"

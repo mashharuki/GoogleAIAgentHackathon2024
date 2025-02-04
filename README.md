@@ -120,10 +120,8 @@ GoogleAIAgentHackathon用リポジトリです。
 
     - dockerイメージのビルド
 
-        `api` フォルダ配下で動かしてください。
-
         ```bash
-        docker build . -t hono-vertexai-image:latest
+        pnpm api run container:build
         ```
 
         以下でDocker イメージを確認
@@ -134,10 +132,8 @@ GoogleAIAgentHackathon用リポジトリです。
 
     - dockerイメージを使ってコンテナを起動させる
 
-        `api` フォルダ配下で動かしてください。
-
         ```bash
-        docker run --env-file .env -p 3000:3000 hono-vertexai-image:latest
+        pnpm api run container:run hono-vertexai-image:latest
         ```
 
     - docker イメージを格納するためのリポジトリをGoogle Cloud側に作成する。

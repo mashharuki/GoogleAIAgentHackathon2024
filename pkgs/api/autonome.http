@@ -4,6 +4,16 @@
 
 ### agents APIを呼び出す
 GET {{baseUrl}}/agents
-Authorization: Basic d2ViMy1kZXY6VHJJa051WEJQSg==
+Authorization:Basic d2ViMy1kZXY6VHJJa051WEJQSg==
 
 {}
+
+
+### POST Request
+POST {{baseUrl}}/chat
+Content-Type: application/json
+Authorization: Basic d2ViMy1kZXY6VHJJa051WEJQSg==
+
+{
+  "message": "hi"
+}
