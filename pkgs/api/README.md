@@ -1,4 +1,4 @@
-# HonoとDcokerで構築したAI Agent用のAPI
+# API (built with Hono)
 
 ## 動かし方(ローカル編)
 
