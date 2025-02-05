@@ -10,8 +10,8 @@ import {
 } from "viem";
 import { holesky } from "viem/chains";
 import { z } from "zod";
+import { createPrivyViemAccount, createPrivyWallet } from "../../privy";
 import { ERC20_ABI } from "../abis/erc20_abi";
-import { account } from "../util";
 
 dotenv.config();
 
@@ -39,10 +39,10 @@ const publicClient = createPublicClient({
   transport: http(`https://eth-holesky.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
 });
 
+// Create a wallet client
 const walletClient = createWalletClient({
   chain: holesky,
   transport: http(`https://eth-holesky.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
-  account: account,
 });
 
 /**
@@ -90,6 +90,7 @@ const stakeWithLido = tool(
 
       // Execute the transaction
       const txHash = await walletClient.writeContract({
+        account: await createPrivyViemAccount(),
         abi: LIDO_ABI,
         address: LIDO_ADDRESS,
         functionName: "submit",
@@ -98,10 +99,9 @@ const stakeWithLido = tool(
       });
 
       console.log(`Transaction sent: ${txHash}`);
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      console.log("Transaction confirmed! Receipt:", receipt);
+
+      // トランザクション完了待ち
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       return txHash;
     } catch (error) {
@@ -126,21 +126,27 @@ const stakeWithLido = tool(
   },
 );
 
-export { stakeWithLido };
-
 /**
  * Get the balances of ETH and stETH for the connected wallet.
  */
 const getEthAndStEthBalances = tool(
   async () => {
     try {
-      const walletAddress = walletClient.account.address;
+      // privyのWalletインスタンスを作成
+      const walletData = await createPrivyWallet();
+      // walletDataからWalletのアドレスを取得
+      const walletAddress = walletData.address;
+
+      console.log(`Getting balances for wallet: ${walletAddress}`);
 
       // ETH balance
-      const ethBalance = await getETHBalance(walletAddress);
+      const ethBalance = await getETHBalance(walletAddress as `0x${string}`);
 
       // stETH balance
-      const stETHBalance = await getERC20Balance(walletAddress, LIDO_ADDRESS);
+      const stETHBalance = await getERC20Balance(
+        walletAddress as `0x${string}`,
+        LIDO_ADDRESS,
+      );
 
       return {
         ethBalance,
@@ -157,4 +163,4 @@ const getEthAndStEthBalances = tool(
   },
 );
 
-export { getEthAndStEthBalances };
+export { getEthAndStEthBalances, stakeWithLido };

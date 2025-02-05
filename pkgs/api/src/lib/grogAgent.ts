@@ -9,6 +9,7 @@ import {
   getUserAccountDataForArbitrumSepolia,
   lendCryptoForArbitrumSepolia,
 } from "./tools/arbitrumSepolia/aaveTool";
+import { reStake } from "./tools/holesky/eigenlayerTool";
 import {
   getEthAndStEthBalances,
   stakeWithLido,
@@ -43,6 +44,7 @@ export const createCryptTools = () => {
     getUserAccountDataForArbitrumSepolia,
     lendCryptoForArbitrumSepolia,
     borrowCryptoForArbitrumSepolia,
+    reStake,
   ];
 
   const toolNode = new ToolNode(tools);
