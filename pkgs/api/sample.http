@@ -22,11 +22,12 @@ POST {{baseUrl}}/runCdpChatMode
 Content-Type: application/json
 
 {
-  "prompt": "What is my wallet's balance (ETH) on Holesky now?"
+  "prompt": "If the account holds more than 5 USDC, lend it to the AAVE protocol. Include the following in the results: - The account's updated collateral status - Transaction hash   - Transaction status"
 }
 
 ## "prompt": "What is my wallet's balance (ETH & USDC) now?"
 ## "prompt": "What is my wallet's balance (EURC) now?"
+## "prompt": "What is my wallet's balance (ETH) on Holesky now?"
 ## "prompt": "Please tell me abount my account data on AAVE protocol."
 ## "prompt": "Please register myTestDomain to basename"
 ## "prompt": "Cloud you fund ETH (faucet) to my wallet on base-sepolia?"
