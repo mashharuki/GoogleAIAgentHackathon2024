@@ -1,24 +1,8 @@
-# CDK for Terraform 用のコード
+# CDK for Terraform
 
-## 事前準備
+## How to work
 
-- Terraform CLI のインストール
-
-- CDK for Terraform CLI のインストール
-
-- コンテナイメージ用のリポジトリが作成済でイメージも Google Cloud にプッシュ済みとします。
-
-## プロバイダーのインストール
-
-Google Cloud の場合
-
-```bash
-cdktf provider add hashicorp/google
-```
-
-## 動かし方
-
-- インストール
+- install
 
   ```bash
   bun install
@@ -30,13 +14,13 @@ cdktf provider add hashicorp/google
   bun run diff
   ```
 
-- デプロイ
+- deploy to Cloud Run
 
   ```bash
   bun run deploy 'hono-vertexai-sample-api'
   ```
 
-  以下のように出力されれば OK!
+  result:
 
   ```bash
   cdktf
@@ -45,16 +29,8 @@ cdktf provider add hashicorp/google
   service_url = https://<固有値>.a.run.app
   ```
 
-- 削除
+- Delete
 
   ```bash
   bun run destroy 'hono-vertexai-sample-api'
   ```
-
-## API の叩き方
-
-`api`の`sample.http`を参照のこと！！
-
-### 参考文献
-
-1. [GitHub CloudRun サンプル実装例](https://github.com/hashicorp/terraform-cdk/blob/main/examples/typescript/google-cloudrun/main.ts)

@@ -20,6 +20,9 @@ const {
   ALCHEMY_API_KEY,
   Groq_API_Key,
   COINGECKO_API_KEY,
+  PRIVY_APP_ID,
+  PRIVY_APP_SECRET_KEY,
+  ANTHROPIC_KEY_API,
 } = process.env;
 
 export interface MyStackConfig {
@@ -34,30 +37,30 @@ export interface MyStackConfig {
  */
 export class MyStack extends TerraformStack {
   /**
-   * コンストラクター
+   * Constructor
    * @param scope
    * @param id
    */
   constructor(scope: Construct, id: string, config: MyStackConfig) {
     super(scope, id);
 
-    // Google Cloud プロバイダーの設定
+    // Google Cloud Provider settings
     new GoogleProvider(this, "GoogleProvider", {
       project: config.projectId,
       region: config.region,
     });
 
-    // サービスアカウントの作成
+    // Creating a service account
     const serviceAccount = new DataGoogleServiceAccount(
       this,
       "HonoSampleAccount",
       {
-        accountId: "honoSampleAccount", // サービスアカウント名
+        accountId: "honoSampleAccount", // Service account　name
         project: config.projectId,
       },
     );
 
-    // CloudRunに割り当てるポリシー
+    // Policy to be assigned to CloudRun
     const policy_data = new DataGoogleIamPolicy(this, "HonoSampleAccountIAM", {
       binding: [
         {
@@ -67,7 +70,7 @@ export class MyStack extends TerraformStack {
       ],
     });
 
-    // CloudRun リソース
+    // CloudRun Resource
     const cloudrunsvcapp = new CloudRunService(this, "HonoVertexAICloudRun", {
       location: config.region,
       name: config.imageName,
@@ -82,7 +85,7 @@ export class MyStack extends TerraformStack {
                   containerPort: 3000,
                 },
               ],
-              // 環境変数の設定
+              // Environment variables settings
               env: [
                 {
                   name: "PROJECT_ID",
@@ -132,6 +135,18 @@ export class MyStack extends TerraformStack {
                   name: "COINGECKO_API_KEY",
                   value: COINGECKO_API_KEY,
                 },
+                {
+                  name: "PRIVY_APP_ID",
+                  value: PRIVY_APP_ID,
+                },
+                {
+                  name: "PRIVY_APP_SECRET_KEY",
+                  value: PRIVY_APP_SECRET_KEY,
+                },
+                {
+                  name: "ANTHROPIC_KEY_API",
+                  value: ANTHROPIC_KEY_API,
+                },
               ],
             },
           ],
@@ -139,7 +154,7 @@ export class MyStack extends TerraformStack {
       },
     });
 
-    // CloudRun リソースに権限を割り当てる。
+    // CloudRun IAM Policy
     new CloudRunServiceIamPolicy(this, "runsvciampolicy", {
       location: config.region,
       project: cloudrunsvcapp.project,
