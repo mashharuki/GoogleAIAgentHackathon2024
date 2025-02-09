@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 import { useAccount } from "wagmi";
 import { TipButton } from "./Tip";
 import { WalletComponent } from "./Wallet";
@@ -25,7 +24,7 @@ export function Header({
               className="mr-2"
             />
             <span className="text-2xl font-bold text-black dark:text-white">
-              AgentDeFiSphere
+              放課後DeFAIクラブ
             </span>
           </Link>
         </div>
