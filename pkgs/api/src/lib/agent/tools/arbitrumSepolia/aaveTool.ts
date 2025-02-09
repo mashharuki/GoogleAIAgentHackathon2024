@@ -1,9 +1,12 @@
 import { tool } from "@langchain/core/tools";
 import * as dotenv from "dotenv";
 import { http, createPublicClient, createWalletClient, parseUnits } from "viem";
-import { sepolia } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 import { z } from "zod";
-import { createPrivyViemAccount, createPrivyWallet } from "../../privy";
+import {
+  createPrivyViemAccount,
+  createPrivyWallet,
+} from "../../../wallet/privy";
 import { AAVE_LENDING_POOL_ABI_TESTNET } from "../abis/aave_lending_pool_abi_testnet";
 import { ERC20_ABI } from "../abis/erc20_abi";
 
@@ -11,27 +14,27 @@ dotenv.config();
 
 const { ALCHEMY_API_KEY } = process.env;
 
-// コントラクトのアドレス(sepolia)
-const AAVE_LENDING_POOL_ADDRESS = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";
+// Contract address(arbitrum Sepolia)
+const AAVE_LENDING_POOL_ADDRESS = "0xBfC91D59fdAA134A4ED45f7B584cAf96D7792Eff";
 
-// public Clientとwallet Clientを作成
+// Create a public Client and a wallet Client
 const client = createPublicClient({
-  chain: sepolia,
-  transport: http(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
+  chain: arbitrumSepolia,
+  transport: http(`https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
 });
 const walletClient = createWalletClient({
-  transport: http(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
-  chain: sepolia,
+  transport: http(`https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`),
+  chain: arbitrumSepolia,
 });
 
 /**
- * 暗号通貨を借り入れる
- * @param amount 借りる暗号通貨の量
- * @param assetAddress 借りる資産のコントラクトアドレス
- * @param interestRateMode 利率モード（1: 固定金利、2: 変動金利）
- * @returns トランザクションハッシュまたは null
+ * Borrow cryptocurrency.
+ * @param amount Amount of cryptocurrency to borrow
+ * @param assetAddress Contract address of the asset to be borrowed
+ * @param interestRateMode Interest rate mode (1: fixed interest rate, 2: variable interest rate)
+ * @returns Transaction hash or null
  */
-const borrowCrypto = tool(
+const borrowCryptoForArbitrumSepolia = tool(
   async (input: {
     amount: number;
     assetAddress: `0x${string}`;
@@ -40,7 +43,7 @@ const borrowCrypto = tool(
       const interestRateMode = 2;
       const { amount, assetAddress } = input;
 
-      // トークンのデシマル数を取得
+      // Get the token decimals.
       const decimals = (await client.readContract({
         abi: ERC20_ABI,
         address: assetAddress,
@@ -49,13 +52,13 @@ const borrowCrypto = tool(
 
       console.log(`Decimals: ${decimals}`);
 
-      // 借入額をトークン単位に変換
+      // Convert the amount borrowed into tokens
       const amountInWei = parseUnits(amount.toString(), decimals);
 
-      // walllet dataを取得
+      // Retrieve wallet data
       const walletData = await createPrivyWallet();
 
-      // 借入トランザクションの実行
+      // Execute the borrow transaction
       const borrowHash = await walletClient.writeContract({
         account: await createPrivyViemAccount(),
         abi: AAVE_LENDING_POOL_ABI_TESTNET,
@@ -72,7 +75,7 @@ const borrowCrypto = tool(
 
       console.log(`Borrow transaction hash: ${borrowHash}`);
 
-      // トランザクション完了待ち
+      // Waiting for transaction completion
       await client.waitForTransactionReceipt({ hash: borrowHash });
 
       return borrowHash;
@@ -82,9 +85,9 @@ const borrowCrypto = tool(
     }
   },
   {
-    name: "borrow_crypto",
+    name: "borrow_crypto_on_arbitrum_sepolia",
     description:
-      "Borrow a specified amount of a cryptocurrency asset from AAVE Lending Pool.",
+      "Borrow a specified amount of a cryptocurrency asset from AAVE Lending Pool on Arbitrum Sepolia.",
     schema: z.object({
       amount: z
         .number()
@@ -100,17 +103,17 @@ const borrowCrypto = tool(
 );
 
 /**
- * 暗号通貨を貸し出すメソッド
+ * Method of lending cryptocurrency for ArbitrumSepolia
  * @param amount
  * @param assetAddress
  * @returns
  */
-const lendCrypto = tool(
+const lendCryptoForArbitrumSepolia = tool(
   async (input: { amount: number; assetAddress: `0x${string}` }) => {
     try {
       const { amount, assetAddress } = input;
 
-      // トークンのデシマル数を取得
+      // Get the token decimals.
       const decimals = (await client.readContract({
         abi: ERC20_ABI,
         address: assetAddress,
@@ -118,11 +121,11 @@ const lendCrypto = tool(
       })) as number;
 
       console.log(`Decimals: ${decimals}`);
-      // 単位を変換する。
+      // Convert units
       const amountInWei = parseUnits(amount.toString(), decimals);
       console.log(`amountInWei: ${amountInWei}`);
 
-      // 承認トランザクションを実行
+      // Execute the approval transaction
       const approveHash = await walletClient.writeContract({
         account: await createPrivyViemAccount(),
         abi: ERC20_ABI,
@@ -132,13 +135,13 @@ const lendCrypto = tool(
       });
       console.log(`Approval transaction hash: ${approveHash}`);
 
-      // 承認の完了を待つ
+      // Wait for approval completion.
       await client.waitForTransactionReceipt({ hash: approveHash });
 
-      // walllet dataを取得
+      // Retrieve wallet data
       const walletData = await createPrivyWallet();
 
-      // トークンをAAVE Lending Poolに供給
+      // Supply tokens to the AAVE Lending Pool
       const supplyHash = await walletClient.writeContract({
         account: await createPrivyViemAccount(),
         abi: AAVE_LENDING_POOL_ABI_TESTNET,
@@ -148,7 +151,7 @@ const lendCrypto = tool(
       });
       console.log(`Supply transaction hash: ${supplyHash}`);
 
-      // トランザクション完了待ち
+      // Waiting for transaction completion
       await client.waitForTransactionReceipt({ hash: supplyHash });
 
       return supplyHash;
@@ -158,9 +161,9 @@ const lendCrypto = tool(
     }
   },
   {
-    name: "lend_crypto",
+    name: "lend_crypto_on_arbitrum_sepolia",
     description:
-      "Lend a specified amount of a cryptocurrency asset to the AAVE Lending Pool.",
+      "Lend a specified amount of a cryptocurrency asset to the AAVE Lending Pool on Arbitrum Sepolia.",
     schema: z.object({
       amount: z
         .number()
@@ -176,16 +179,16 @@ const lendCrypto = tool(
 );
 
 /**
- * ユーザーの資産情報を取得するメソッド
+ * Method for obtaining user asset information for ArbitrumSepolia
  * @returns
  */
-const getUserAccountData = tool(
+const getUserAccountDataForArbitrumSepolia = tool(
   async (input: { userAddress: `0x${string}` }) => {
     try {
       const { userAddress } = input;
 
-      // AAVEコントラクトから資産データを取得
-      // getUserAccountData関数を呼び出す
+      // Retrieving asset data from AAVE contracts
+      // Call the getUserAccountData function
       const accountData = (await client.readContract({
         abi: AAVE_LENDING_POOL_ABI_TESTNET,
         address: AAVE_LENDING_POOL_ADDRESS,
@@ -195,7 +198,7 @@ const getUserAccountData = tool(
 
       console.log(`Account data: ${accountData}`);
 
-      // 結果を整形して返却
+      // Return the formatted results
       return {
         totalCollateralBase: Number(accountData[0]),
         totalDebtBase: Number(accountData[1]),
@@ -210,9 +213,9 @@ const getUserAccountData = tool(
     }
   },
   {
-    name: "get_user_account_data",
+    name: "get_user_account_data_on_arbitrum_sepolia",
     description:
-      "Retrieve the user's account data from AAVE, including collateral, debt, and health factor.",
+      "Retrieve the user's account data from AAVE, including collateral, debt, and health factor on Arbitrum Sepolia.",
     schema: z.object({
       userAddress: z
         .string()
@@ -224,12 +227,12 @@ const getUserAccountData = tool(
 );
 
 /**
- * ユーザーのトークンの残高を取得するメソッド
+ * Method for obtaining the user's token balance for ArbitrumSepolia
  * @param tokenAddress
  * @param userAddress
  * @returns
  */
-const getTokenBalance = tool(
+const getTokenBalanceForArbitrumSepolia = tool(
   async (input: {
     tokenAddress: `0x${string}`;
     userAddress?: `0x${string}`;
@@ -238,15 +241,15 @@ const getTokenBalance = tool(
       const { tokenAddress, userAddress } = input;
       let finalUserAddress = userAddress;
 
-      // walllet dataを取得
+      // Retrieve wallet data
       const walletData = await createPrivyWallet();
 
-      // ユーザーアドレスが指定されていない場合、デフォルトで walletClient のアドレスを使用
+      // If no user address is specified, the walletClient address is used by default.
       if (!finalUserAddress) {
         finalUserAddress = walletData.address as `0x${string}`;
       }
 
-      // トークンの残高を取得
+      // Get the token balance
       const balance = await client.readContract({
         abi: ERC20_ABI,
         address: tokenAddress,
@@ -254,7 +257,7 @@ const getTokenBalance = tool(
         args: [finalUserAddress],
       });
 
-      // トークンのデシマル数を取得
+      // Get the token decimals.
       const decimals = await client.readContract({
         abi: ERC20_ABI,
         address: tokenAddress,
@@ -262,7 +265,7 @@ const getTokenBalance = tool(
         args: [],
       });
 
-      // Decimalに合わせて残高を調整（balanceを割る）
+      // Adjust the balance (divide the balance) to match the decimal
       const balanceInDecimal = Number(balance) / 10 ** (decimals as number);
 
       return balanceInDecimal;
@@ -272,9 +275,9 @@ const getTokenBalance = tool(
     }
   },
   {
-    name: "get_token_balance",
+    name: "get_token_balance_on_arbitrum_sepolia",
     description:
-      "Get the token balance of the user for the given token address.",
+      "Get the token balance of the user for the given token address on Arbitrum Sepolia.",
     schema: z.object({
       tokenAddress: z
         .string()
@@ -293,4 +296,9 @@ const getTokenBalance = tool(
   },
 );
 
-export { borrowCrypto, getTokenBalance, getUserAccountData, lendCrypto };
+export {
+  borrowCryptoForArbitrumSepolia,
+  getTokenBalanceForArbitrumSepolia,
+  getUserAccountDataForArbitrumSepolia,
+  lendCryptoForArbitrumSepolia,
+};

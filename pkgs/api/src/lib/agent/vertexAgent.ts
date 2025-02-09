@@ -15,7 +15,7 @@ dotenv.config();
 const { PROJECT_ID, REGION } = process.env;
 
 /**
- * AI Agentに割り当てるツール群を指定する。
+ * Specify the tools to be assigned to the AI Agent.
  */
 export const createTools = () => {
   const tools = [search];
@@ -25,10 +25,10 @@ export const createTools = () => {
 };
 
 /**
- *Vertex AI提供のLLMを使ってAI Agent用のインスタンスを作成するメソッド
+ *　Method for creating an instance for an AI Agent using the LLM provided by Vertex AI
  */
 export const createVertexAIAIAgent = (systemPrompt: string) => {
-  // VertexAIインスタンスを作成。
+  // Instantiate VertexAI models
   const vertexAI = new VertexAI({
     project: PROJECT_ID,
     location: REGION,
@@ -36,7 +36,7 @@ export const createVertexAIAIAgent = (systemPrompt: string) => {
 
   // Instantiate Gemini models
   const agent = vertexAI.getGenerativeModel({
-    model: "gemini-pro",
+    model: "gemini-1.5-flash",
     safetySettings: [
       {
         category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
@@ -60,9 +60,9 @@ export const createVertexAIAIAgent = (systemPrompt: string) => {
 };
 
 /**
- * AI Agentに実行させるワークフローとタスクを定義するメソッド
+ * Methods for defining the workflow and tasks to be executed by the AI Agent
  * @parma AI Agent instance
- * @param toolNode 外部ツール
+ * @param toolNode Third-Party Tools
  */
 export const createAgentTask = async (
   agent: GenerativeModel | VertexAI,
@@ -90,7 +90,7 @@ export const createAgentTask = async (
    * @returns
    */
   async function callModel(state: typeof MessagesAnnotation.State) {
-    // AIに推論させる
+    // Let AI make inferences
     const response = await (agent as GenerativeModel).generateContent({
       contents: [
         {
@@ -112,7 +112,7 @@ export const createAgentTask = async (
     return { messages: [message] };
   }
 
-  // ワークフローを構築する。
+  // Establish a workflow.
   const workflow = new StateGraph(MessagesAnnotation)
     .addNode("agent", callModel)
     .addEdge("__start__", "agent") // __start__ is a special name for the entrypoint
@@ -127,40 +127,22 @@ export const createAgentTask = async (
 };
 
 /**
- * VertexAIAIAgentに推論処理を実行させるメソッド
+ * Method for executing inference processing in VertexAIAIAgent
  */
 export const runVertexAIAIAgent = async (
   tools: ToolNode,
   systemPrompt: string,
   prompt: string,
 ) => {
-  // GeminiのAI agent用のインスタンスを作成する。
+  // Create an instance for the Gemini AI agent.
   const agent = createVertexAIAIAgent(systemPrompt);
 
-  // ワークフローを構築する。
+  // Establish a workflow.
   const app = await createAgentTask(agent, tools);
 
-  // プロンプトを調整
-  const fixedPrompt = `
-    You are a beginner in the world of DeFi, trying to understand complex concepts and terms related to decentralized finance.
-
-    The following text contains technical details from a professional DeFi investor who has analyzed the market and provided insights. Your job is to read this analysis and identify any terms or concepts you don't fully understand. When you encounter something unclear, ask a simple, straightforward question to better understand the topic. Keep the tone inquisitive and beginner-friendly.
-
-    Here is the analysis from the professional investor:
-
-      "${prompt}"
-
-    And please output the response in below style.
-
-    # output
-     Questions:
-      ・
-      ・
-  `;
-
-  // 推論実行
+  // Inference Execution
   const finalState = await app.invoke({
-    messages: [new HumanMessage(fixedPrompt)],
+    messages: [new HumanMessage(prompt)],
   });
 
   const response = finalState.messages[finalState.messages.length - 1].content;
